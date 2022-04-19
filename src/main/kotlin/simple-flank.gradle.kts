@@ -88,5 +88,6 @@ fun registerFlankRun(
                 file { builtArtifactsLoader.load(apk)?.elements?.single()?.outputFile }
             }
         )
-        dumpShards.set(true)
+        val dumpShards: String by project
+        this@register.dumpShards.set(dumpShards.toBoolean())
     }

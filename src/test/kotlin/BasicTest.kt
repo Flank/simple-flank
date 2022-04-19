@@ -18,9 +18,9 @@ internal class BasicTest: GradleTest() {
             """.trimIndent()
         )
 
-        gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
+        gradleRunner("flankRun", "-PdumpShards=true", "--stacktrace").forwardOutput().build()
         gradleRunner("clean").build()
-        val build = gradleRunner("flankRun", "--stacktrace", "--info").forwardOutput().build()
+        val build = gradleRunner("flankRun", "-PdumpShards=true", "--stacktrace", "--info").forwardOutput().build()
 
         expectThat(build) {
             task(":flankRunDebug").isNotNull().isFromCache()
@@ -32,9 +32,9 @@ internal class BasicTest: GradleTest() {
     internal fun appWorks() {
         projectFromResources("app")
 
-        gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
+        gradleRunner("flankRun", "-PdumpShards=true", "--stacktrace").forwardOutput().build()
         gradleRunner("clean").build()
-        val build = gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
+        val build = gradleRunner("flankRun", "-PdumpShards=true", "--stacktrace").forwardOutput().build()
 
         expectThat(build) {
             task(":flankRunDebug").isNotNull().isFromCache()

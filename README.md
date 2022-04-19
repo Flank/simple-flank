@@ -50,3 +50,6 @@ simpleFlank {
 }
 ```
 
+## debugging shards
+
+`./gradlew runFlank -PdumpShards=true`

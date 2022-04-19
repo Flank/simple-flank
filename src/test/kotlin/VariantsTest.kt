@@ -10,7 +10,7 @@ class VariantsTest: GradleTest() {
     fun useTheDefaultBuildType() {
         projectFromResources("app")
 
-        val build = gradleRunner("flankRun").forwardOutput().build()
+        val build = gradleRunner("flankRun", "-PdumpShards=true").forwardOutput().build()
 
         expectThat(build) {
             task(":packageDebug").isNotNull()
@@ -34,7 +34,7 @@ class VariantsTest: GradleTest() {
             """.trimIndent()
         )
 
-        val build = gradleRunner("flankRun").forwardOutput().build()
+        val build = gradleRunner("flankRun", "-PdumpShards=true").forwardOutput().build()
 
         expectThat(build) {
             task(":packageBeta").isNotNull()
@@ -63,7 +63,7 @@ class VariantsTest: GradleTest() {
             """.trimIndent()
         )
 
-        val build = gradleRunner("flankRun").forwardOutput().build()
+        val build = gradleRunner("flankRun", "-PdumpShards=true").forwardOutput().build()
 
         expectThat(build) {
             task(":packagePreDebug").isNotNull()
