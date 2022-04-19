@@ -46,7 +46,7 @@ If you are using the Gradle BuildCache, you just need to declare your tests as h
 
 ```
 simpleFlank {
-  hermetic.set(true)
+  hermeticTests.set(true)
 }
 ```
 

@@ -78,7 +78,7 @@ fun registerFlankRun(
         projectId.set(simpleFlankExtension.projectId)
         flankProject.set(getFlankProject())
         this@register.variant.set(variant.name)
-        hermeticTests.set(simpleFlankExtension.hermetic)
+        hermeticTests.set(simpleFlankExtension.hermeticTests)
 
         val minSdk = variant.minSdkVersion.apiLevel
         val selectedSdk = min(max(NexusLowRes.minOsVersion(), minSdk), NexusLowRes.maxOsVersion())

@@ -12,7 +12,7 @@ abstract class SimpleFlankExtension(private val project: Project) {
       credentialsFile.map { defaultProjectId(it.asFile) }
     )
 
-  val hermetic = project.objects.property<Boolean>().convention(false)
+  val hermeticTests = project.objects.property<Boolean>().convention(false)
 
   private fun defaultProjectId(file: File): String {
     val projectIdRegex = "\"project_id\": \"(.*)\"".toRegex()
