@@ -53,3 +53,13 @@ simpleFlank {
 ## debugging shards
 
 `./gradlew runFlank -PdumpShards=true`
+
+
+## changing Flank version
+
+```
+dependencies {
+    flankExecutable("com.github.flank:flank:21.11.0")
+}
+```
+

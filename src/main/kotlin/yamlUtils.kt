@@ -8,7 +8,8 @@ fun File.writeYaml(
     appApk: File,
     testApk: File,
 ) {
-    writeText("""
+  writeText(
+      """
       gcloud:
         app: $appApk
         test: $testApk
@@ -37,6 +38,5 @@ fun File.writeYaml(
         output-style: single
         default-test-time: 1.0
         use-average-test-time-for-new-tests: true
-    """.trimIndent()
-    )
+    """.trimIndent())
 }

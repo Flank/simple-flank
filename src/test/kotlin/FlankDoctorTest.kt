@@ -6,15 +6,18 @@ import strikt.assertions.isOneOf
 import strikt.gradle.testkit.outcome
 import strikt.gradle.testkit.task
 
-class FlankDoctorTest: GradleTest() {
-    @Test
-    fun doctor() {
-        projectFromResources("app")
+class FlankDoctorTest : GradleTest() {
+  @Test
+  fun doctor() {
+    projectFromResources("app")
 
-        val build = gradleRunner("flankDoctorDebug", "--stacktrace").forwardOutput().build()
+    val build = gradleRunner("flankDoctorDebug", "--stacktrace").forwardOutput().build()
 
-        expectThat(build) {
-            task(":flankDoctorDebug").isNotNull().outcome.isOneOf(TaskOutcome.SUCCESS, TaskOutcome.FROM_CACHE)
-        }
+    expectThat(build) {
+      task(":flankDoctorDebug")
+          .isNotNull()
+          .outcome
+          .isOneOf(TaskOutcome.SUCCESS, TaskOutcome.FROM_CACHE)
     }
+  }
 }

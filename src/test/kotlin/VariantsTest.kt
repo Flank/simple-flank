@@ -1,28 +1,29 @@
+import java.io.File
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isNotNull
 import strikt.gradle.testkit.task
-import java.io.File
 
-class VariantsTest: GradleTest() {
+class VariantsTest : GradleTest() {
 
-    @Test
-    fun useTheDefaultBuildType() {
-        projectFromResources("app")
+  @Test
+  fun useTheDefaultBuildType() {
+    projectFromResources("app")
 
-        val build = gradleRunner("flankRun", "-PdumpShards=true").forwardOutput().build()
+    val build = gradleRunner("flankRun", "-PdumpShards=true").forwardOutput().build()
 
-        expectThat(build) {
-            task(":packageDebug").isNotNull()
-            task(":packageDebugAndroidTest").isNotNull()
-            task(":flankRun").isNotNull()
-        }
+    expectThat(build) {
+      task(":packageDebug").isNotNull()
+      task(":packageDebugAndroidTest").isNotNull()
+      task(":flankRun").isNotNull()
     }
+  }
 
-    @Test
-    fun allowToChangeTheBuildType() {
-        projectFromResources("app")
-        File(testProjectDir.root, "build.gradle.kts").appendText(
+  @Test
+  fun allowToChangeTheBuildType() {
+    projectFromResources("app")
+    File(testProjectDir.root, "build.gradle.kts")
+        .appendText(
             """
                 android {
                     testBuildType = "beta"
@@ -31,22 +32,22 @@ class VariantsTest: GradleTest() {
                         create("beta")
                     }
                 }
-            """.trimIndent()
-        )
+            """.trimIndent())
 
-        val build = gradleRunner("flankRun", "-PdumpShards=true").forwardOutput().build()
+    val build = gradleRunner("flankRun", "-PdumpShards=true").forwardOutput().build()
 
-        expectThat(build) {
-            task(":packageBeta").isNotNull()
-            task(":packageBetaAndroidTest").isNotNull()
-            task(":flankRun").isNotNull()
-        }
+    expectThat(build) {
+      task(":packageBeta").isNotNull()
+      task(":packageBetaAndroidTest").isNotNull()
+      task(":flankRun").isNotNull()
     }
+  }
 
-    @Test
-    fun allowFlavors() {
-        projectFromResources("app")
-        File(testProjectDir.root, "build.gradle.kts").appendText(
+  @Test
+  fun allowFlavors() {
+    projectFromResources("app")
+    File(testProjectDir.root, "build.gradle.kts")
+        .appendText(
             """
                 android {
                     flavorDimensions += listOf("env")
@@ -60,17 +61,16 @@ class VariantsTest: GradleTest() {
                         }
                     }
                 }
-            """.trimIndent()
-        )
+            """.trimIndent())
 
-        val build = gradleRunner("flankRun", "-PdumpShards=true").forwardOutput().build()
+    val build = gradleRunner("flankRun", "-PdumpShards=true").forwardOutput().build()
 
-        expectThat(build) {
-            task(":packagePreDebug").isNotNull()
-            task(":packagePreDebugAndroidTest").isNotNull()
-            task(":packageProDebug").isNotNull()
-            task(":packageProDebugAndroidTest").isNotNull()
-            task(":flankRun").isNotNull()
-        }
+    expectThat(build) {
+      task(":packagePreDebug").isNotNull()
+      task(":packagePreDebugAndroidTest").isNotNull()
+      task(":packageProDebug").isNotNull()
+      task(":packageProDebugAndroidTest").isNotNull()
+      task(":flankRun").isNotNull()
     }
+  }
 }

@@ -1,14 +1,10 @@
 import org.gradle.api.tasks.Input
 
 sealed class AvailableVirtualDevice(
-  @Input
-  val id: String,
-  @Input
-  private val make: String,
-  @Input
-  private val model: String,
-  @Input
-  val osVersion: Int
+    @Input val id: String,
+    @Input private val make: String,
+    @Input private val model: String,
+    @Input val osVersion: Int
 ) {
   override fun toString(): String {
     return "$make $model - $osVersion"
@@ -16,13 +12,14 @@ sealed class AvailableVirtualDevice(
 }
 
 class NexusLowRes(osVersion: Int) :
-  AvailableVirtualDevice("NexusLowRes", "Generic", "Low-resolution MDPI phone", osVersion) {
+    AvailableVirtualDevice("NexusLowRes", "Generic", "Low-resolution MDPI phone", osVersion) {
   companion object {
     fun deviceForMinSdk(minSdk: Int) = NexusLowRes(selectedVersionForMinSdk(minSdk))
     private fun selectedVersionForMinSdk(minSdk: Int): Int {
       val selectedSdk = Integer.max(minOsVersion, minSdk)
       if (selectedSdk > maxOsVersion) {
-        throw RuntimeException("NexusLowRes doesn't support $minSdk yet, max sdk version is $maxOsVersion")
+        throw RuntimeException(
+            "NexusLowRes doesn't support $minSdk yet, max sdk version is $maxOsVersion")
       }
       return selectedSdk
     }
@@ -57,7 +54,8 @@ class Nexus5X(osVersion: Int) : AvailableVirtualDevice("Nexus5X", "LG", "Nexus 5
   }
 }
 
-class Nexus7(osVersion: Int) : AvailableVirtualDevice("Nexus7", "Asus", "Nexus 7 (2012)", osVersion) {
+class Nexus7(osVersion: Int) :
+    AvailableVirtualDevice("Nexus7", "Asus", "Nexus 7 (2012)", osVersion) {
   companion object {
     fun api19() = Nexus7(19)
     fun api21() = Nexus7(21)
@@ -66,7 +64,8 @@ class Nexus7(osVersion: Int) : AvailableVirtualDevice("Nexus7", "Asus", "Nexus 7
 }
 
 class Nexus7Clone169(osVersion: Int) :
-  AvailableVirtualDevice("Nexus7_clone_16_9", "Generic", "Nexus7 clone, DVD 16:9 aspect ratio ", osVersion) {
+    AvailableVirtualDevice(
+        "Nexus7_clone_16_9", "Generic", "Nexus7 clone, DVD 16:9 aspect ratio ", osVersion) {
   companion object {
     fun api23() = Nexus7Clone169(23)
     fun api24() = Nexus7Clone169(24)
