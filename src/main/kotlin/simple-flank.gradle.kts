@@ -13,6 +13,8 @@ dependencies { flankExecutable("com.github.flank:flank") { version { prefer("22.
 val simpleFlankExtension = extensions.create<SimpleFlankExtension>("simpleFlank")
 
 plugins.withType(AppPlugin::class.java) {
+  tasks.register<FlankVersionTask>("flankVersion") { flankJarClasspath.from(flankExecutable) }
+
   val appExtension = requireNotNull(extensions.findByType<ApplicationAndroidComponentsExtension>())
   appExtension.onVariants {
     val debugApkDir: Provider<Directory> = it.artifacts.get(SingleArtifact.APK)
@@ -47,6 +49,8 @@ plugins.withType(AppPlugin::class.java) {
 }
 
 plugins.withType(LibraryPlugin::class.java) {
+  tasks.register<FlankVersionTask>("flankVersion") { flankJarClasspath.from(flankExecutable) }
+
   useFixedKeystore()
   val libraryExtension = requireNotNull(extensions.findByType<LibraryAndroidComponentsExtension>())
   libraryExtension.onVariants {

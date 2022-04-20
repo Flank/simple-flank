@@ -59,7 +59,7 @@ simpleFlank {
 
 ```
 dependencies {
-    flankExecutable("com.github.flank:flank:21.11.0")
+  flankExecutable("com.github.flank:flank:21.11.0")
 }
 ```
 

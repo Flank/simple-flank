@@ -2,8 +2,8 @@ import org.gradle.api.tasks.Input
 
 sealed class AvailableVirtualDevice(
     @Input val id: String,
-    @Input private val make: String,
-    @Input private val model: String,
+    @Input val make: String,
+    @Input val model: String,
     @Input val osVersion: Int
 ) {
   override fun toString(): String {
