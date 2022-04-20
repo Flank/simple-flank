@@ -17,42 +17,28 @@ plugins.withType(AppPlugin::class.java) {
   tasks.register<FlankVersionTask>("flankVersion") { flankJarClasspath.from(flankExecutable) }
 
   val appExtension = requireNotNull(extensions.findByType<ApplicationAndroidComponentsExtension>())
-  appExtension.onVariants {
-    val debugApkDir: Provider<Directory> = it.artifacts.get(SingleArtifact.APK)
-    val testApkDir: Provider<Directory>? = it.androidTest?.artifacts?.get(SingleArtifact.APK)
+  appExtension.onVariants { variant ->
+    val debugApkDir: Provider<Directory> = variant.artifacts.get(SingleArtifact.APK)
+    val testApkDir: Provider<Directory>? = variant.androidTest?.artifacts?.get(SingleArtifact.APK)
 
     if (testApkDir != null) {
-      val builtArtifactsLoader = it.artifacts.getBuiltArtifactsLoader()
+      val builtArtifactsLoader = variant.artifacts.getBuiltArtifactsLoader()
       val apkProvider: Provider<File> =
           debugApkDir.map { apk ->
             file { builtArtifactsLoader.load(apk)?.elements?.single()?.outputFile }
           }
       registerFlankRun(
-              it,
+              variant,
               testApkDir,
               builtArtifactsLoader,
               requireNotNull(project.extensions.findByType<ApplicationExtension>()))
           .configure { appApk.fileProvider(apkProvider) }
-      tasks.register<FlankDoctorTask>("flankDoctor${it.name.capitalize()}") {
-        appApk.fileProvider(apkProvider)
-        flankJarClasspath.from(flankExecutable)
-        projectId.set(simpleFlankExtension.projectId)
-        flankProject.set(getFlankProject())
-        this@register.variant.set(it.name)
-        useOrchestrator.set(
-            provider {
-              requireNotNull(project.extensions.findByType<ApplicationExtension>())
-                  .testOptions
-                  .execution
-                  .toUpperCase() == "ANDROIDX_TEST_ORCHESTRATOR"
-            })
-
-        device.set(NexusLowRes.deviceForMinSdk(it.minSdkVersion.apiLevel))
-        testApk.fileProvider(
-            testApkDir.map { apk ->
-              file { builtArtifactsLoader.load(apk)?.elements?.single()?.outputFile }
-            })
-      }
+      registerFlankDoctor(
+              variant,
+              testApkDir,
+              builtArtifactsLoader,
+              requireNotNull(project.extensions.findByType<ApplicationExtension>()))
+          .configure { appApk.fileProvider(apkProvider) }
     }
   }
   tasks.register("flankRun") { dependsOn(tasks.withType<FlankRunTask>()) }
@@ -64,14 +50,23 @@ plugins.withType(LibraryPlugin::class.java) {
 
   useFixedKeystore()
   val libraryExtension = requireNotNull(extensions.findByType<LibraryAndroidComponentsExtension>())
-  libraryExtension.onVariants {
-    val testApkDir: Provider<Directory>? = it.androidTest?.artifacts?.get(SingleArtifact.APK)
+  libraryExtension.onVariants { variant ->
+    val testApkDir: Provider<Directory>? = variant.androidTest?.artifacts?.get(SingleArtifact.APK)
 
     if (testApkDir != null) {
       val copySmallApp: Copy = getSmallAppTask()
-      val builtArtifactsLoader = it.artifacts.getBuiltArtifactsLoader()
+      val builtArtifactsLoader = variant.artifacts.getBuiltArtifactsLoader()
       registerFlankRun(
-              it,
+              variant,
+              testApkDir,
+              builtArtifactsLoader,
+              requireNotNull(project.extensions.findByType<LibraryExtension>()))
+          .configure {
+            dependsOn(copySmallApp)
+            appApk.value { files(copySmallApp).asFileTree.matching { include("*.apk") }.singleFile }
+          }
+      registerFlankDoctor(
+              variant,
               testApkDir,
               builtArtifactsLoader,
               requireNotNull(project.extensions.findByType<LibraryExtension>()))
@@ -110,4 +105,27 @@ fun registerFlankRun(
           })
       val dumpShards: String by project
       this@register.dumpShards.set(dumpShards.toBoolean())
+    }
+
+fun registerFlankDoctor(
+    variant: Variant,
+    testApkDir: Provider<Directory>,
+    builtArtifactsLoader: BuiltArtifactsLoader,
+    androidExtension: CommonExtension<*, *, *, *>
+): TaskProvider<FlankDoctorTask> =
+    tasks.register<FlankDoctorTask>("flankDoctor${variant.name.capitalize()}") {
+      flankJarClasspath.from(flankExecutable)
+      projectId.set(simpleFlankExtension.projectId)
+      flankProject.set(getFlankProject())
+      this@register.variant.set(variant.name)
+      useOrchestrator.set(
+          provider {
+            androidExtension.testOptions.execution.toUpperCase() == "ANDROIDX_TEST_ORCHESTRATOR"
+          })
+
+      device.set(NexusLowRes.deviceForMinSdk(variant.minSdkVersion.apiLevel))
+      testApk.fileProvider(
+          testApkDir.map { apk ->
+            file { builtArtifactsLoader.load(apk)?.elements?.single()?.outputFile }
+          })
     }
