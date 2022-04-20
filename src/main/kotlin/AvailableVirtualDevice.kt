@@ -10,7 +10,6 @@ sealed class AvailableVirtualDevice(
   @Input
   val osVersion: Int
 ) {
-  fun toFladleDevice() = mapOf("model" to id, "version" to osVersion.toString())
   override fun toString(): String {
     return "$make $model - $osVersion"
   }
@@ -19,8 +18,16 @@ sealed class AvailableVirtualDevice(
 class NexusLowRes(osVersion: Int) :
   AvailableVirtualDevice("NexusLowRes", "Generic", "Low-resolution MDPI phone", osVersion) {
   companion object {
-    fun minOsVersion() = 23
-    fun maxOsVersion() = 30
+    fun deviceForMinSdk(minSdk: Int) = NexusLowRes(selectedVersionForMinSdk(minSdk))
+    private fun selectedVersionForMinSdk(minSdk: Int): Int {
+      val selectedSdk = Integer.max(minOsVersion, minSdk)
+      if (selectedSdk > maxOsVersion) {
+        throw RuntimeException("NexusLowRes doesn't support $minSdk yet, max sdk version is $maxOsVersion")
+      }
+      return selectedSdk
+    }
+    val minOsVersion = 23
+    val maxOsVersion = 30
     fun api23() = NexusLowRes(23)
     fun api24() = NexusLowRes(24)
     fun api25() = NexusLowRes(25)

@@ -5,8 +5,6 @@ import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.api.variant.Variant
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
-import java.lang.Integer.max
-import java.lang.Integer.min
 
 val flankExecutable: Configuration by configurations.creating
 
@@ -36,10 +34,26 @@ plugins.withType(AppPlugin::class.java) {
                     apkProvider
                 )
             }
+            tasks.register<FlankDoctorTask>("flankDoctor${it.name.capitalize()}") {
+                appApk.fileProvider(
+                    apkProvider
+                )
+                flankJarClasspath.from(flankExecutable)
+                projectId.set(simpleFlankExtension.projectId)
+                flankProject.set(getFlankProject())
+                this@register.variant.set(it.name)
+
+                device.set(NexusLowRes.deviceForMinSdk(it.minSdkVersion.apiLevel))
+                testApk.fileProvider(
+                    testApkDir.map { apk ->
+                        file { builtArtifactsLoader.load(apk)?.elements?.single()?.outputFile }
+                    }
+                )
+            }
         }
     }
     tasks.register("flankRun") {
-        dependsOn(tasks.withType<FlankExecutionTask>())
+        dependsOn(tasks.withType<FlankRunTask>())
     }
     verifyNotDefaultKeystore()
 }
@@ -62,7 +76,7 @@ plugins.withType(LibraryPlugin::class.java) {
         }
     }
     tasks.register("flankRun") {
-        dependsOn(tasks.withType<FlankExecutionTask>())
+        dependsOn(tasks.withType<FlankRunTask>())
     }
 }
 
@@ -70,8 +84,8 @@ fun registerFlankRun(
     variant: Variant,
     testApkDir: Provider<Directory>,
     builtArtifactsLoader: BuiltArtifactsLoader
-) =
-    tasks.register<FlankExecutionTask>("flankRun${variant.name.capitalize()}") {
+): TaskProvider<FlankRunTask> =
+    tasks.register<FlankRunTask>("flankRun${variant.name.capitalize()}") {
         flankJarClasspath.from(flankExecutable)
 
         serviceAccountCredentials.set(simpleFlankExtension.credentialsFile)
@@ -80,9 +94,7 @@ fun registerFlankRun(
         this@register.variant.set(variant.name)
         hermeticTests.set(simpleFlankExtension.hermeticTests)
 
-        val minSdk = variant.minSdkVersion.apiLevel
-        val selectedSdk = min(max(NexusLowRes.minOsVersion(), minSdk), NexusLowRes.maxOsVersion())
-        device.set(NexusLowRes(selectedSdk))
+        device.set(NexusLowRes.deviceForMinSdk(variant.minSdkVersion.apiLevel))
         testApk.fileProvider(
             testApkDir.map { apk ->
                 file { builtArtifactsLoader.load(apk)?.elements?.single()?.outputFile }

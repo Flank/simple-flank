@@ -18,13 +18,13 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.process.ExecOperations
 import javax.inject.Inject
 
-abstract class FlankExecutionTask : DefaultTask() {
+abstract class FlankRunTask : DefaultTask() {
   @get:Inject
-  internal abstract val objectFactory: ObjectFactory
+  protected abstract val objectFactory: ObjectFactory
   @get:Inject
-  internal abstract val projectLayout: ProjectLayout
+  protected abstract val projectLayout: ProjectLayout
   @get:Inject
-  internal abstract val execOperations: ExecOperations
+  protected abstract val execOperations: ExecOperations
 
   @get:Input
   val hermeticTests: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(false)
@@ -46,12 +46,12 @@ abstract class FlankExecutionTask : DefaultTask() {
   abstract val variant: Property<String>
 
   @get:InputFile
-  @Classpath
-  val appApk = objectFactory.fileProperty()
+  @get:Classpath
+  abstract val appApk: RegularFileProperty
 
   @get:InputFile
-  @Classpath
-  val testApk = objectFactory.fileProperty()
+  @get:Classpath
+  abstract val testApk: RegularFileProperty
 
   @get:Nested
   abstract val device: Property<AvailableVirtualDevice>
@@ -100,7 +100,15 @@ abstract class FlankExecutionTask : DefaultTask() {
     check(serviceAccountCredentials.get().asFile.exists()) { "serviceAccountCredential file doesn't exist ${serviceAccountCredentials.get()}" }
 
     getOutputDir().get().asFile.deleteRecursively()
-    writeYaml(projectId.get(), flankProject.get(), variant.get(), device.get())
+
+    flankYaml.get().asFile.writeYaml(
+      projectId.get(),
+      flankProject.get(),
+      variant.get(),
+      device.get(),
+      appApk.get().asFile.relativeTo(workingDir.get().asFile),
+      testApk.get().asFile.relativeTo(workingDir.get().asFile),
+    )
 
     logger.debug(flankYaml.get().asFile.readText())
 
@@ -113,40 +121,7 @@ abstract class FlankExecutionTask : DefaultTask() {
       } else {
         listOf("firebase", "test", "android", "run")
       }
-      workingDir(this@FlankExecutionTask.workingDir.asFile.get())
+      workingDir(this@FlankRunTask.workingDir.asFile.get())
     }.assertNormalExitValue()
-  }
-
-  private fun writeYaml(projectId: String, flankProject: String, variant: String, device: AvailableVirtualDevice) {
-    flankYaml.get().asFile.writeText("""
-      gcloud:
-        app: ${appApk.get().asFile.relativeTo(workingDir.get().asFile)}
-        test: ${testApk.get().asFile.relativeTo(workingDir.get().asFile)}
-        device:
-        - model: ${device.id}
-          version: ${device.osVersion}
-
-        use-orchestrator: false
-        auto-google-login: false
-        record-video: false
-        performance-metrics: false
-        timeout: 15m
-        results-history-name: $flankProject.$variant
-        num-flaky-test-attempts: 0
-
-      flank:
-        max-test-shards: 40
-        shard-time: 120
-        smart-flank-gcs-path: gs://$projectId/$flankProject.$variant/JUnitReport.xml
-        keep-file-path: false
-        ignore-failed-tests: false
-        disable-sharding: false
-        smart-flank-disable-upload: false
-        legacy-junit-result: false
-        full-junit-result: false
-        output-style: single
-        default-test-time: 1.0
-        use-average-test-time-for-new-tests: true
-    """.trimIndent())
   }
 }
