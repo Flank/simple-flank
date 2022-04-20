@@ -50,6 +50,8 @@ abstract class FlankRunTask : DefaultTask() {
 
   @get:Input val localResultsDir = objectFactory.property(String::class.java).convention("results")
 
+  @get:Input abstract val useOrchestrator: Property<Boolean>
+
   @Input
   fun getWorkingDirRelativePath(): String =
       workingDir.asFile.get().relativeTo(projectLayout.flankDir.get().asFile).path
@@ -93,6 +95,7 @@ abstract class FlankRunTask : DefaultTask() {
             device.get(),
             appApk.get().asFile.relativeTo(workingDir.get().asFile),
             testApk.get().asFile.relativeTo(workingDir.get().asFile),
+            useOrchestrator.get(),
         )
 
     logger.debug(flankYaml.get().asFile.readText())

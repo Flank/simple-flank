@@ -31,6 +31,8 @@ abstract class FlankDoctorTask : DefaultTask() {
 
   @get:InputFiles @get:Classpath abstract val flankJarClasspath: ConfigurableFileCollection
 
+  @get:Input abstract val useOrchestrator: Property<Boolean>
+
   @Input
   fun getWorkingDirRelativePath(): String =
       workingDir.asFile.get().relativeTo(projectLayout.flankDir.get().asFile).path
@@ -59,6 +61,7 @@ abstract class FlankDoctorTask : DefaultTask() {
             device.get(),
             appApk.get().asFile.relativeTo(workingDir.get().asFile),
             testApk.get().asFile.relativeTo(workingDir.get().asFile),
+            useOrchestrator.get(),
         )
 
     logger.debug(flankYaml.get().asFile.readText())

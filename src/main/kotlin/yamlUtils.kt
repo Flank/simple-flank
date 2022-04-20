@@ -7,6 +7,7 @@ fun File.writeYaml(
     device: AvailableVirtualDevice,
     appApk: File,
     testApk: File,
+    useOrchestrator: Boolean,
 ) {
   writeText(
       """
@@ -17,7 +18,7 @@ fun File.writeYaml(
         - model: "${device.id}"
           version: "${device.osVersion}"
 
-        use-orchestrator: false
+        use-orchestrator: $useOrchestrator
         auto-google-login: false
         record-video: false
         performance-metrics: false

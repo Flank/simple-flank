@@ -63,3 +63,6 @@ dependencies {
 }
 ```
 
+## Orchestrator
+
+`simple-flank` will configure it automatically if you are using "ANDROIDX_TEST_ORCHESTRATOR"
