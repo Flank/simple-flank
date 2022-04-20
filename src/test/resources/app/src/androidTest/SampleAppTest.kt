@@ -1,2 +1,1 @@
-class SampleAppTest {
-}
+class SampleAppTest {}

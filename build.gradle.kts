@@ -1,6 +1,6 @@
 plugins {
     `kotlin-dsl`
-    id("com.ncorti.ktfmt.gradle") version "0.8.0"
+    id("com.diffplug.spotless") version "6.4.2"
 }
 
 group = "flank"
@@ -36,5 +36,15 @@ tasks.withType<Test> {
 
     if (!environment.containsKey("ANDROID_HOME")) {
         environment("ANDROID_HOME", "${environment["HOME"]}/Library/Android/sdk")
+    }
+}
+
+spotless {
+    kotlin {
+        ktfmt()
+        targetExclude(
+            "**/build/**",
+            "**/.gradle/**",
+        )
     }
 }
