@@ -32,13 +32,15 @@ class VariantsTest : GradleTest() {
                         create("beta")
                     }
                 }
+                tasks.withType<FlankRunTask>().configureEach { enabled = false }
             """.trimIndent())
 
-    val build = gradleRunner("flankRun", "-PdumpShards=true").forwardOutput().build()
+    val build = gradleRunner("flankRun").forwardOutput().build()
 
     expectThat(build) {
       task(":packageBeta").isNotNull()
       task(":packageBetaAndroidTest").isNotNull()
+      task(":flankRunBeta").isNotNull()
       task(":flankRun").isNotNull()
     }
   }

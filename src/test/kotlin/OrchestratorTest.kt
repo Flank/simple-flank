@@ -10,7 +10,7 @@ class OrchestratorTest : GradleTest() {
 
     gradleRunner("flankDoctor").build()
 
-    val flankYaml = File(testProjectDir.root, "build/flank/flank.yml").readText()
+    val flankYaml = File(testProjectDir.root, "build/flank/debug/flank.yml").readText()
     expectThat(flankYaml) { contains("use-orchestrator: false") }
   }
 
@@ -46,7 +46,7 @@ class OrchestratorTest : GradleTest() {
 
     gradleRunner("flankDoctor").forwardOutput().build()
 
-    val flankYaml = File(testProjectDir.root, "build/flank/flank.yml").readText()
+    val flankYaml = File(testProjectDir.root, "build/flank/debug/flank.yml").readText()
     expectThat(flankYaml) { contains("use-orchestrator: true") }
   }
 }

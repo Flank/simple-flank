@@ -1,15 +1,16 @@
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.Directory
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
@@ -34,40 +35,31 @@ abstract class FlankRunTask : DefaultTask() {
   @get:PathSensitive(PathSensitivity.NONE)
   abstract val serviceAccountCredentials: RegularFileProperty
 
-  @get:Input abstract val projectId: Property<String>
-
-  @get:Input abstract val flankProject: Property<String>
-
   @get:Input abstract val variant: Property<String>
 
   @get:InputFile @get:Classpath abstract val appApk: RegularFileProperty
-
   @get:InputFile @get:Classpath abstract val testApk: RegularFileProperty
-
-  @get:Nested abstract val device: Property<AvailableVirtualDevice>
 
   @get:InputFiles @get:Classpath abstract val flankJarClasspath: ConfigurableFileCollection
 
   @get:Input val localResultsDir = objectFactory.property(String::class.java).convention("results")
 
-  @get:Input abstract val useOrchestrator: Property<Boolean>
+  @get:InputFile
+  @get:PathSensitive(PathSensitivity.NONE)
+  abstract val flankYaml: RegularFileProperty
 
-  @Input
-  fun getWorkingDirRelativePath(): String =
-      workingDir.asFile.get().relativeTo(projectLayout.flankDir.get().asFile).path
+  private val workingDir: Provider<Directory> =
+    variant.flatMap { projectLayout.buildDirectory.dir("flank/$it") }
 
-  private val workingDir = objectFactory.directoryProperty().convention(projectLayout.flankDir)
-  fun setUpWorkingDir(configName: String) {
-    workingDir.set(projectLayout.buildDirectory.dir("flank/$configName"))
-  }
+  @OutputDirectory
+  fun getOutputDir(): Provider<Directory> =
+      variant.flatMap { workingDir.get().dir(localResultsDir) }
 
-  @OutputDirectory fun getOutputDir() = workingDir.dir(localResultsDir)
+  @get:OutputFile
+  val androidShardsOutput = variant.map { workingDir.get().file("android_shards.json") }
 
-  @get:OutputFile val flankYaml = workingDir.file("flank.yml")
-
-  @get:OutputFile val androidShardsOutput = workingDir.file("android_shards.json")
-
-  @get:OutputFile val flankLinksOutput = workingDir.file("flank-links.log")
+  @get:OutputFile
+  val flankLinksOutput = variant.map { workingDir.get().file("flank-links.log") }
 
   init {
     group = Test.TASK_GROUP
@@ -84,22 +76,6 @@ abstract class FlankRunTask : DefaultTask() {
     }
 
     getOutputDir().get().asFile.deleteRecursively()
-
-    flankYaml
-        .get()
-        .asFile
-        .writeYaml(
-            projectId.get(),
-            flankProject.get(),
-            variant.get(),
-            device.get(),
-            appApk.get().asFile.relativeTo(workingDir.get().asFile),
-            testApk.get().asFile.relativeTo(workingDir.get().asFile),
-            useOrchestrator.get(),
-        )
-
-    logger.debug(flankYaml.get().asFile.readText())
-
     execOperations
         .javaexec {
           classpath = flankJarClasspath
@@ -112,7 +88,7 @@ abstract class FlankRunTask : DefaultTask() {
               } else {
                 listOf("firebase", "test", "android", "run")
               }
-          workingDir(this@FlankRunTask.workingDir.asFile.get())
+          workingDir(workingDir)
         }
         .assertNormalExitValue()
   }
