@@ -1,6 +1,7 @@
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
@@ -14,8 +15,9 @@ abstract class FlankDoctorTask : DefaultTask() {
 
   @get:Input abstract val variant: Property<String>
 
-  @get:InputFile @get:Classpath abstract val appApk: RegularFileProperty
-  @get:InputFile @get:Classpath abstract val testApk: RegularFileProperty
+  @get:InputFile @get:Classpath @get:Optional abstract val appApk: RegularFileProperty
+  @get:InputDirectory @get:Classpath @get:Optional abstract val appApkDir: DirectoryProperty
+  @get:InputDirectory @get:Classpath abstract val testApkDir: DirectoryProperty
 
   @get:InputFiles @get:Classpath abstract val flankJarClasspath: ConfigurableFileCollection
 
@@ -30,17 +32,15 @@ abstract class FlankDoctorTask : DefaultTask() {
 
   @TaskAction
   fun run() {
+    check(appApk.isPresent xor appApkDir.isPresent) {
+      "One, and only one, of appApk or appApkDir must be set"
+    }
     execOperations
         .javaexec {
           classpath = flankJarClasspath
           mainClass.set("ftl.Main")
           args = listOf("firebase", "test", "android", "doctor")
-          workingDir(
-              projectLayout
-                  .buildDirectory
-                  .dir("flank/${variant.get()}")
-                  .get()
-                  .asFile)
+          workingDir(projectLayout.buildDirectory.dir("flank/${variant.get()}").get().asFile)
         }
         .assertNormalExitValue()
   }

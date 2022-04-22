@@ -8,7 +8,7 @@ class OrchestratorTest : GradleTest() {
   fun disabledByDefault() {
     projectFromResources("app")
 
-    gradleRunner("flankDoctor").build()
+    gradleRunner("flankYamlDebug").forwardOutput().build()
 
     val flankYaml = File(testProjectDir.root, "build/flank/debug/flank.yml").readText()
     expectThat(flankYaml) { contains("use-orchestrator: false") }
@@ -44,7 +44,7 @@ class OrchestratorTest : GradleTest() {
       android.useAndroidX=true
     """.trimIndent())
 
-    gradleRunner("flankDoctor").forwardOutput().build()
+    gradleRunner("flankYamlDebug").forwardOutput().build()
 
     val flankYaml = File(testProjectDir.root, "build/flank/debug/flank.yml").readText()
     expectThat(flankYaml) { contains("use-orchestrator: true") }

@@ -23,29 +23,24 @@ plugins.withType(AppPlugin::class.java) {
 
     if (testApkDir != null) {
       val builtArtifactsLoader = variant.artifacts.getBuiltArtifactsLoader()
-      val apkProvider: Provider<File> =
-          debugApkDir.map { apk ->
-            file { builtArtifactsLoader.load(apk)?.elements?.single()?.outputFile }
-          }
       val yamlWriterTask: TaskProvider<FlankYmlWriterTask> =
           registerFlankYamlWriter(
               variant,
               testApkDir,
               builtArtifactsLoader,
               requireNotNull(project.extensions.findByType<ApplicationExtension>()))
-      yamlWriterTask.configure { appApk.fileProvider(apkProvider) }
+      yamlWriterTask.configure { appApkDir.set(debugApkDir) }
       registerFlankRun(
               variant,
               testApkDir,
-              builtArtifactsLoader,
           )
           .configure {
             flankYaml.set(yamlWriterTask.get().flankYaml)
-            appApk.fileProvider(apkProvider)
+            appApkDir.set(debugApkDir)
           }
-      registerFlankDoctor(variant, testApkDir, builtArtifactsLoader).configure {
+      registerFlankDoctor(variant, testApkDir).configure {
         flankYaml.set(yamlWriterTask.get().flankYaml)
-        appApk.fileProvider(apkProvider)
+        appApkDir.set(debugApkDir)
       }
     }
   }
@@ -62,7 +57,7 @@ plugins.withType(LibraryPlugin::class.java) {
     val testApkDir: Provider<Directory>? = variant.androidTest?.artifacts?.get(SingleArtifact.APK)
 
     if (testApkDir != null) {
-      val copySmallApp: Copy = getSmallAppTask()
+      val copySmallApp: CopySmallApp = getSmallAppTask()
       val builtArtifactsLoader = variant.artifacts.getBuiltArtifactsLoader()
       val yamlWriterTask =
           registerFlankYamlWriter(
@@ -72,22 +67,21 @@ plugins.withType(LibraryPlugin::class.java) {
               requireNotNull(project.extensions.findByType<LibraryExtension>()))
       yamlWriterTask.configure {
         dependsOn(copySmallApp)
-        appApk.value { files(copySmallApp).asFileTree.matching { include("*.apk") }.singleFile }
+        appApk.set(copySmallApp.appApk)
       }
       registerFlankRun(
               variant,
               testApkDir,
-              builtArtifactsLoader,
           )
           .configure {
             flankYaml.set(yamlWriterTask.get().flankYaml)
             dependsOn(copySmallApp)
-            appApk.value { files(copySmallApp).asFileTree.matching { include("*.apk") }.singleFile }
+            appApk.set(copySmallApp.appApk)
           }
-      registerFlankDoctor(variant, testApkDir, builtArtifactsLoader).configure {
+      registerFlankDoctor(variant, testApkDir).configure {
         flankYaml.set(yamlWriterTask.get().flankYaml)
         dependsOn(copySmallApp)
-        appApk.value { files(copySmallApp).asFileTree.matching { include("*.apk") }.singleFile }
+        appApk.set(copySmallApp.appApk)
       }
     }
   }
@@ -110,16 +104,13 @@ fun registerFlankYamlWriter(
           })
 
       device.set(NexusLowRes.deviceForMinSdk(variant.minSdkVersion.apiLevel))
-      testApk.fileProvider(
-          testApkDir.map { apk ->
-            file { builtArtifactsLoader.load(apk)?.elements?.single()?.outputFile }
-          })
+      this.builtArtifactsLoader.set(builtArtifactsLoader)
+      this.testApkDir.set(testApkDir)
     }
 
 fun registerFlankRun(
     variant: Variant,
     testApkDir: Provider<Directory>,
-    builtArtifactsLoader: BuiltArtifactsLoader,
 ): TaskProvider<FlankRunTask> =
     tasks.register<FlankRunTask>("flankRun${variant.name.capitalize()}") {
       flankJarClasspath.from(flankExecutable)
@@ -127,24 +118,17 @@ fun registerFlankRun(
       serviceAccountCredentials.set(simpleFlankExtension.credentialsFile)
       this@register.variant.set(variant.name)
       hermeticTests.set(simpleFlankExtension.hermeticTests)
-      testApk.fileProvider(
-          testApkDir.map { apk ->
-            file { builtArtifactsLoader.load(apk)?.elements?.single()?.outputFile }
-          })
+      this.testApkDir.set(testApkDir)
       val dumpShards: String? by project
       this@register.dumpShards.set(dumpShards.toBoolean())
     }
 
 fun registerFlankDoctor(
     variant: Variant,
-    testApkDir: Provider<Directory>,
-    builtArtifactsLoader: BuiltArtifactsLoader
+    testApkDir: Provider<Directory>
 ): TaskProvider<FlankDoctorTask> =
     tasks.register<FlankDoctorTask>("flankDoctor${variant.name.capitalize()}") {
       flankJarClasspath.from(flankExecutable)
       this@register.variant.set(variant.name)
-      testApk.fileProvider(
-          testApkDir.map { apk ->
-            file { builtArtifactsLoader.load(apk)?.elements?.single()?.outputFile }
-          })
+      this.testApkDir.set(testApkDir)
     }

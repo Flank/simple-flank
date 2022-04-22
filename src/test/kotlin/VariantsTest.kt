@@ -9,8 +9,10 @@ class VariantsTest : GradleTest() {
   @Test
   fun useTheDefaultBuildType() {
     projectFromResources("app")
+    File(testProjectDir.root, "build.gradle.kts")
+        .appendText("tasks.withType<FlankRunTask>().configureEach { enabled = false }")
 
-    val build = gradleRunner("flankRun", "-PdumpShards=true").forwardOutput().build()
+    val build = gradleRunner("flankRun").forwardOutput().build()
 
     expectThat(build) {
       task(":packageDebug").isNotNull()
@@ -63,9 +65,10 @@ class VariantsTest : GradleTest() {
                         }
                     }
                 }
+                tasks.withType<FlankRunTask>().configureEach { enabled = false }
             """.trimIndent())
 
-    val build = gradleRunner("flankRun", "-PdumpShards=true").forwardOutput().build()
+    val build = gradleRunner("flankRun").forwardOutput().build()
 
     expectThat(build) {
       task(":packagePreDebug").isNotNull()

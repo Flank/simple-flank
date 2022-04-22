@@ -1,9 +1,8 @@
+import com.android.build.api.variant.BuiltArtifactsLoader
 import java.io.File
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
-import org.gradle.api.file.Directory
-import org.gradle.api.file.ProjectLayout
-import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.file.*
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -17,15 +16,17 @@ abstract class FlankYmlWriterTask : DefaultTask() {
   @get:Input abstract val flankProject: Property<String>
   @get:Input abstract val variant: Property<String>
 
-  @get:InputFile @get:Classpath abstract val appApk: RegularFileProperty
-  @get:InputFile @get:Classpath abstract val testApk: RegularFileProperty
+  @get:InputFile @get:Classpath @get:Optional abstract val appApk: RegularFileProperty
+  @get:InputDirectory @get:Classpath @get:Optional abstract val appApkDir: DirectoryProperty
+  @get:InputDirectory @get:Classpath abstract val testApkDir: DirectoryProperty
+  @get:Internal abstract val builtArtifactsLoader: Property<BuiltArtifactsLoader>
 
   @get:Nested abstract val device: Property<AvailableVirtualDevice>
 
   @get:Input abstract val useOrchestrator: Property<Boolean>
 
   private val workingDir: Provider<Directory> =
-    variant.flatMap { projectLayout.buildDirectory.dir("flank/$it") }
+      variant.flatMap { projectLayout.buildDirectory.dir("flank/$it") }
 
   @get:OutputFile
   val flankYaml: RegularFileProperty =
@@ -33,6 +34,13 @@ abstract class FlankYmlWriterTask : DefaultTask() {
 
   @TaskAction
   fun run() {
+    val appApkFile: RegularFile =
+        appApk
+            .orElse(
+                appApkDir.map {
+                  it.file(builtArtifactsLoader.get().load(it)!!.elements.single().outputFile)
+                })
+            .get()
     flankYaml
         .get()
         .asFile
@@ -41,8 +49,12 @@ abstract class FlankYmlWriterTask : DefaultTask() {
             flankProject.get(),
             variant.get(),
             device.get(),
-            appApk.get().asFile.relativeTo(workingDir.get().asFile),
-            testApk.get().asFile.relativeTo(workingDir.get().asFile),
+            appApkFile.asFile.relativeTo(workingDir.get().asFile),
+            testApkDir
+                .map { it.file(builtArtifactsLoader.get().load(it)!!.elements.single().outputFile) }
+                .get()
+                .asFile
+                .relativeTo(workingDir.get().asFile),
             useOrchestrator.get(),
         )
 
