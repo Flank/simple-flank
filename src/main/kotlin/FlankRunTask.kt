@@ -20,6 +20,9 @@ abstract class FlankRunTask : DefaultTask() {
   @get:Input
   val dumpShards: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(false)
 
+  @get:Input
+  val dry: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(false)
+
   @get:InputFile
   @get:PathSensitive(PathSensitivity.NONE)
   abstract val serviceAccountCredentials: RegularFileProperty
@@ -74,12 +77,12 @@ abstract class FlankRunTask : DefaultTask() {
           mainClass.set("ftl.Main")
           environment(
               mapOf("GOOGLE_APPLICATION_CREDENTIALS" to serviceAccountCredentials.get().asFile))
-          args =
-              if (dumpShards.get()) {
-                listOf("firebase", "test", "android", "run", "--dump-shards")
-              } else {
-                listOf("firebase", "test", "android", "run")
-              }
+          args = listOf("firebase", "test", "android", "run")
+          if (dumpShards.get()) args("--dump-shards")
+          if (dry.get()) args("--dry")
+
+          logger.lifecycle(args.toString())
+
           workingDir(this@FlankRunTask.workingDir)
         }
         .assertNormalExitValue()

@@ -13,7 +13,7 @@ abstract class GradleTest {
   fun gradleRunner(vararg arguments: String): GradleRunner {
     return GradleRunner.create()
         .withProjectDir(testProjectDir.root)
-        .withArguments(arguments.asList())
+        .withArguments(arguments.asList() + "-Pdry=true")
         .withPluginClasspath()
   }
 }
