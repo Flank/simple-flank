@@ -121,6 +121,8 @@ fun registerFlankRun(
       this.testApkDir.set(testApkDir)
       val dumpShards: String? by project
       this@register.dumpShards.set(dumpShards.toBoolean())
+      val dry: String? by project
+      this@register.dry.set(dry.toBoolean())
     }
 
 fun registerFlankDoctor(
