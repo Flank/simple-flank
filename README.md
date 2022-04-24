@@ -1,5 +1,5 @@
 # simple-flank
-simple-flank is a Gradle plugin to use Flank in Android projects with no configuration needed
+simple-flank is a new gradle plugin with a clear focus: make the setup as simple as possible.
 
 Applied to any application or library module it creates a task called `runFlank` that will run all the android tests (all flavors, debug buildType by default)
 
