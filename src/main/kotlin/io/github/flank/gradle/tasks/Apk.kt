@@ -1,4 +1,4 @@
-package com.github.flank.gradle.tasks
+package io.github.flank.gradle.tasks
 
 import com.android.build.api.variant.BuiltArtifactsLoader
 import org.gradle.api.file.Directory

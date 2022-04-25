@@ -1,4 +1,4 @@
-package com.github.flank.gradle.tasks
+package io.github.flank.gradle.tasks
 
 import javax.inject.Inject
 import org.gradle.api.DefaultTask

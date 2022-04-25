@@ -1,10 +1,12 @@
 plugins {
     `kotlin-dsl`
     id("com.diffplug.spotless") version "6.4.2"
+    id("com.gradle.plugin-publish") version "1.0.0-rc-1"
+    `maven-publish`
 }
 
-group = "com.github.flank.gradle"
-version = "1.0-SNAPSHOT"
+group = "io.github.flank.gradle"
+version = "0.0.2"
 
 repositories {
     google()
@@ -47,4 +49,19 @@ spotless {
             "**/.gradle/**",
         )
     }
+}
+
+gradlePlugin {
+    plugins {
+        named("io.github.flank.gradle.simple-flank") {
+            displayName = "simple-flank plugin: a 0 configuration Gradle plugin for Flank"
+        }
+    }
+}
+pluginBundle {
+    website = "https://github.com/Flank/simple-flank"
+    vcsUrl = "https://github.com/Flank/simple-flank"
+
+    description = "simple-flank is a new gradle plugin with a clear focus: make the setup as simple as possible."
+    tags = listOf("flank", "testing", "android", "firebase", "test-lab", "instrumentation", "espresso", "firebase-test-lab")
 }

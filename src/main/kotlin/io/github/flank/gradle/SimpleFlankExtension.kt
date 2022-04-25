@@ -1,4 +1,4 @@
-package com.github.flank.gradle
+package io.github.flank.gradle
 
 import java.io.File
 import org.gradle.api.Project

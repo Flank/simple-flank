@@ -1,9 +1,9 @@
-package com.github.flank.gradle.utils
+package io.github.flank.gradle.utils
 
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.internal.tasks.ValidateSigningTask
-import com.github.flank.gradle.SimpleFlankExtension
+import io.github.flank.gradle.SimpleFlankExtension
 import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy

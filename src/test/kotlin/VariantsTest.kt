@@ -11,7 +11,7 @@ class VariantsTest : GradleTest() {
     projectFromResources("app")
     File(testProjectDir.root, "build.gradle.kts")
         .appendText(
-            "tasks.withType<com.github.flank.gradle.tasks.FlankRunTask>().configureEach { enabled = false }")
+            "tasks.withType<io.github.flank.gradle.tasks.FlankRunTask>().configureEach { enabled = false }")
 
     val build = gradleRunner("flankRun").forwardOutput().build()
 
@@ -35,7 +35,7 @@ class VariantsTest : GradleTest() {
                         create("beta")
                     }
                 }
-                tasks.withType<com.github.flank.gradle.tasks.FlankRunTask>().configureEach { enabled = false }
+                tasks.withType<io.github.flank.gradle.tasks.FlankRunTask>().configureEach { enabled = false }
             """.trimIndent())
 
     val build = gradleRunner("flankRun").forwardOutput().build()
@@ -66,7 +66,7 @@ class VariantsTest : GradleTest() {
                         }
                     }
                 }
-                tasks.withType<com.github.flank.gradle.tasks.FlankRunTask>().configureEach { enabled = false }
+                tasks.withType<io.github.flank.gradle.tasks.FlankRunTask>().configureEach { enabled = false }
             """.trimIndent())
 
     val build = gradleRunner("flankRun").forwardOutput().build()
