@@ -1,4 +1,4 @@
-package com.github.flank.gradle
+package io.github.flank.gradle
 
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.ApplicationExtension
@@ -8,11 +8,11 @@ import com.android.build.api.variant.*
 import com.android.build.api.variant.Variant
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
-import com.github.flank.gradle.tasks.*
-import com.github.flank.gradle.utils.getFlankProject
-import com.github.flank.gradle.utils.getSmallAppTask
-import com.github.flank.gradle.utils.useFixedKeystore
-import com.github.flank.gradle.utils.verifyNotDefaultKeystore
+import io.github.flank.gradle.tasks.*
+import io.github.flank.gradle.utils.getFlankProject
+import io.github.flank.gradle.utils.getSmallAppTask
+import io.github.flank.gradle.utils.useFixedKeystore
+import io.github.flank.gradle.utils.verifyNotDefaultKeystore
 
 val flankExecutable: Configuration by configurations.creating
 

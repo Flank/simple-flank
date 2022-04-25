@@ -1,7 +1,7 @@
 plugins {
   id("com.android.application")
   id("kotlin-android")
-  id("com.github.flank.gradle.simple-flank")
+  id("io.github.flank.gradle.simple-flank")
 }
 
 repositories {

@@ -1,6 +1,6 @@
-package com.github.flank.gradle.tasks
+package io.github.flank.gradle.tasks
 
-import com.github.flank.gradle.AvailableVirtualDevice
+import io.github.flank.gradle.AvailableVirtualDevice
 import java.io.File
 import javax.inject.Inject
 import org.gradle.api.file.Directory
