@@ -3,7 +3,7 @@ plugins {
     id("com.diffplug.spotless") version "6.4.2"
 }
 
-group = "flank"
+group = "com.github.flank.gradle"
 version = "1.0-SNAPSHOT"
 
 repositories {

@@ -1,4 +1,7 @@
+package com.github.flank.gradle.tasks
+
 import com.android.build.api.variant.BuiltArtifactsLoader
+import com.github.flank.gradle.AvailableVirtualDevice
 import java.io.File
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
@@ -32,6 +35,11 @@ abstract class FlankYmlWriterTask : DefaultTask() {
   val flankYaml: RegularFileProperty =
       objectFactory.fileProperty().value(variant.map { workingDir.get().file("flank.yml") })
 
+  init {
+    group = "flank"
+    description = "Write flank YAML configuration."
+  }
+
   @TaskAction
   fun run() {
     val appApkFile: RegularFile =
@@ -60,19 +68,18 @@ abstract class FlankYmlWriterTask : DefaultTask() {
 
     logger.debug(flankYaml.get().asFile.readText())
   }
-}
 
-fun File.writeYaml(
-    projectId: String,
-    flankProject: String,
-    variant: String,
-    device: AvailableVirtualDevice,
-    appApk: File,
-    testApk: File,
-    useOrchestrator: Boolean,
-) {
-  writeText(
-      """
+  fun File.writeYaml(
+      projectId: String,
+      flankProject: String,
+      variant: String,
+      device: AvailableVirtualDevice,
+      appApk: File,
+      testApk: File,
+      useOrchestrator: Boolean,
+  ) {
+    writeText(
+        """
       gcloud:
         app: $appApk
         test: $testApk
@@ -102,4 +109,5 @@ fun File.writeYaml(
         default-test-time: 1.0
         use-average-test-time-for-new-tests: true
     """.trimIndent())
+  }
 }

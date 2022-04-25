@@ -1,3 +1,5 @@
+package com.github.flank.gradle.utils
+
 import org.gradle.api.Project
 
 fun Project.getFlankProject(): String {
