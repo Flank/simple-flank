@@ -1,3 +1,5 @@
+package com.github.flank.gradle.tasks
+
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
@@ -10,7 +12,7 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
-abstract class CopySmallApp : DefaultTask() {
+abstract class CopySmallAppTask : DefaultTask() {
   @get:Inject protected abstract val fileSystemOperations: FileSystemOperations
   @get:Inject protected abstract val projectLayout: ProjectLayout
 

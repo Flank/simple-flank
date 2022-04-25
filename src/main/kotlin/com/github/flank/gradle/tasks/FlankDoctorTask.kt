@@ -1,3 +1,5 @@
+package com.github.flank.gradle.tasks
+
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
@@ -6,7 +8,6 @@ import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
-import org.gradle.api.tasks.testing.Test
 import org.gradle.process.ExecOperations
 
 abstract class FlankDoctorTask : DefaultTask() {
@@ -26,8 +27,8 @@ abstract class FlankDoctorTask : DefaultTask() {
   abstract val flankYaml: RegularFileProperty
 
   init {
-    group = Test.TASK_GROUP
-    description = "Runs instrumentation tests using flank on firebase test lab."
+    group = "flank"
+    description = "Check for errors in the YAML."
   }
 
   @TaskAction

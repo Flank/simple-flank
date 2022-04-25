@@ -1,3 +1,5 @@
+package com.github.flank.gradle
+
 import org.gradle.api.tasks.Input
 
 sealed class AvailableVirtualDevice(

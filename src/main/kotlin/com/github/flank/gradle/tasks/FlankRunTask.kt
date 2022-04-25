@@ -1,3 +1,5 @@
+package com.github.flank.gradle.tasks
+
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.*
@@ -5,7 +7,6 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
-import org.gradle.api.tasks.testing.Test
 import org.gradle.process.ExecOperations
 
 abstract class FlankRunTask : DefaultTask() {
@@ -54,7 +55,7 @@ abstract class FlankRunTask : DefaultTask() {
   @get:OutputFile val flankLinksOutput = variant.map { workingDir.get().file("flank-links.log") }
 
   init {
-    group = Test.TASK_GROUP
+    group = "flank"
     description = "Runs instrumentation tests using flank on firebase test lab."
 
     outputs.cacheIf { dumpShards.get() || hermeticTests.get() }
