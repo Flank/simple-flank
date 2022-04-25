@@ -1,7 +1,6 @@
 package com.github.flank.gradle.tasks
 
 import javax.inject.Inject
-import org.gradle.api.DefaultTask
 import org.gradle.api.file.*
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
@@ -9,7 +8,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 
-abstract class FlankRunTask : DefaultTask() {
+abstract class FlankRunTask : BaseFlankApkTask() {
   @get:Inject protected abstract val objectFactory: ObjectFactory
   @get:Inject protected abstract val projectLayout: ProjectLayout
   @get:Inject protected abstract val execOperations: ExecOperations
@@ -29,10 +28,6 @@ abstract class FlankRunTask : DefaultTask() {
   abstract val serviceAccountCredentials: RegularFileProperty
 
   @get:Input abstract val variant: Property<String>
-
-  @get:InputFile @get:Classpath @get:Optional abstract val appApk: RegularFileProperty
-  @get:InputDirectory @get:Classpath @get:Optional abstract val appApkDir: DirectoryProperty
-  @get:InputDirectory @get:Classpath abstract val testApkDir: DirectoryProperty
 
   @get:InputFiles @get:Classpath abstract val flankJarClasspath: ConfigurableFileCollection
 
@@ -66,9 +61,6 @@ abstract class FlankRunTask : DefaultTask() {
   fun run() {
     check(serviceAccountCredentials.get().asFile.exists()) {
       "serviceAccountCredential file doesn't exist ${serviceAccountCredentials.get()}"
-    }
-    check(appApk.isPresent xor appApkDir.isPresent) {
-      "One, and only one, of appApk or appApkDir must be set"
     }
 
     getOutputDir().get().asFile.deleteRecursively()

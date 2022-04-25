@@ -20,93 +20,55 @@ dependencies { flankExecutable("com.github.flank:flank") { version { prefer("22.
 
 val simpleFlankExtension = extensions.create<SimpleFlankExtension>("simpleFlank")
 
-plugins.withType(AppPlugin::class.java) {
-  tasks.register<FlankVersionTask>("flankVersion") { flankJarClasspath.from(flankExecutable) }
-
-  val appExtension = requireNotNull(extensions.findByType<ApplicationAndroidComponentsExtension>())
-  appExtension.onVariants { variant ->
+plugins.withType<AppPlugin> {
+  requireNotNull<ApplicationAndroidComponentsExtension>(extensions.findByType()).onVariants {
+      variant ->
     val debugApkDir: Provider<Directory> = variant.artifacts.get(SingleArtifact.APK)
     val testApkDir: Provider<Directory>? = variant.androidTest?.artifacts?.get(SingleArtifact.APK)
 
     if (testApkDir != null) {
       val builtArtifactsLoader = variant.artifacts.getBuiltArtifactsLoader()
-      val yamlWriterTask: TaskProvider<FlankYmlWriterTask> =
-          registerFlankYamlWriter(
-              variant,
-              testApkDir,
-              builtArtifactsLoader,
-              requireNotNull(project.extensions.findByType<ApplicationExtension>()))
-      yamlWriterTask.configure { appApkDir.set(debugApkDir) }
-      registerFlankRun(
-              variant,
-              testApkDir,
-          )
-          .configure {
-            flankYaml.set(yamlWriterTask.get().flankYaml)
-            appApkDir.set(debugApkDir)
-          }
-      registerFlankDoctor(variant, testApkDir).configure {
-        flankYaml.set(yamlWriterTask.get().flankYaml)
-        appApkDir.set(debugApkDir)
-      }
+      val appApk: Apk = Apk.from(debugApkDir, builtArtifactsLoader)
+      val testApk: Apk = Apk.from(testApkDir, builtArtifactsLoader)
+
+      configureTasks(
+          variant,
+          appApk,
+          testApk,
+          requireNotNull(project.extensions.findByType<ApplicationExtension>()))
     }
   }
-  tasks.register("flankRun") {
-    group = Test.TASK_GROUP
-    description = "Run all androidTest using flank."
-    dependsOn(tasks.withType<FlankRunTask>())
-  }
+  tasks.register<FlankVersionTask>("flankVersion") { flankJarClasspath.from(flankExecutable) }
+  registerRunFlankTask()
   verifyNotDefaultKeystore()
 }
 
-plugins.withType(LibraryPlugin::class.java) {
-  tasks.register<FlankVersionTask>("flankVersion") { flankJarClasspath.from(flankExecutable) }
-
+plugins.withType<LibraryPlugin> {
   useFixedKeystore()
-  val libraryExtension = requireNotNull(extensions.findByType<LibraryAndroidComponentsExtension>())
-  libraryExtension.onVariants { variant ->
+  requireNotNull<LibraryAndroidComponentsExtension>(extensions.findByType()).onVariants { variant ->
     val testApkDir: Provider<Directory>? = variant.androidTest?.artifacts?.get(SingleArtifact.APK)
 
     if (testApkDir != null) {
       val copySmallAppTask: CopySmallAppTask = getSmallAppTask()
       val builtArtifactsLoader = variant.artifacts.getBuiltArtifactsLoader()
-      val yamlWriterTask =
-          registerFlankYamlWriter(
-              variant,
-              testApkDir,
-              builtArtifactsLoader,
-              requireNotNull(project.extensions.findByType<LibraryExtension>()))
-      yamlWriterTask.configure {
-        dependsOn(copySmallAppTask)
-        appApk.set(copySmallAppTask.appApk)
-      }
-      registerFlankRun(
-              variant,
-              testApkDir,
-          )
-          .configure {
-            flankYaml.set(yamlWriterTask.get().flankYaml)
-            dependsOn(copySmallAppTask)
-            appApk.set(copySmallAppTask.appApk)
-          }
-      registerFlankDoctor(variant, testApkDir).configure {
-        flankYaml.set(yamlWriterTask.get().flankYaml)
-        dependsOn(copySmallAppTask)
-        appApk.set(copySmallAppTask.appApk)
-      }
+      val appApk: Apk = Apk.from(copySmallAppTask.appApk)
+      val testApk: Apk = Apk.from(testApkDir, builtArtifactsLoader)
+
+      configureTasks(
+          variant,
+          appApk,
+          testApk,
+          requireNotNull(project.extensions.findByType<LibraryExtension>()))
+      tasks.withType<BaseFlankApkTask>().configureEach { dependsOn(copySmallAppTask) }
     }
   }
-  tasks.register("flankRun") {
-    group = Test.TASK_GROUP
-    description = "Run all androidTest using flank."
-    dependsOn(tasks.withType<FlankRunTask>())
-  }
+  tasks.register<FlankVersionTask>("flankVersion") { flankJarClasspath.from(flankExecutable) }
+  registerRunFlankTask()
 }
 
 fun registerFlankYamlWriter(
     variant: Variant,
-    testApkDir: Provider<Directory>,
-    builtArtifactsLoader: BuiltArtifactsLoader,
+    testApk: Apk,
     androidExtension: CommonExtension<*, *, *, *>
 ): TaskProvider<FlankYmlWriterTask> =
     tasks.register<FlankYmlWriterTask>("flankYaml${variant.name.capitalize()}") {
@@ -119,13 +81,12 @@ fun registerFlankYamlWriter(
           })
 
       device.set(NexusLowRes.deviceForMinSdk(variant.minSdkVersion.apiLevel))
-      this.builtArtifactsLoader.set(builtArtifactsLoader)
-      this.testApkDir.set(testApkDir)
+      this.testApk.set(testApk)
     }
 
 fun registerFlankRun(
     variant: Variant,
-    testApkDir: Provider<Directory>,
+    testApk: Apk,
 ): TaskProvider<FlankRunTask> =
     tasks.register<FlankRunTask>("flankRun${variant.name.capitalize()}") {
       flankJarClasspath.from(flankExecutable)
@@ -133,7 +94,7 @@ fun registerFlankRun(
       serviceAccountCredentials.set(simpleFlankExtension.credentialsFile)
       this@register.variant.set(variant.name)
       hermeticTests.set(simpleFlankExtension.hermeticTests)
-      this.testApkDir.set(testApkDir)
+      this.testApk.set(testApk)
       val dumpShards: String? by project
       this@register.dumpShards.set(dumpShards.toBoolean())
       val dry: String? by project
@@ -142,10 +103,41 @@ fun registerFlankRun(
 
 fun registerFlankDoctor(
     variant: Variant,
-    testApkDir: Provider<Directory>
+    testApk: Apk,
 ): TaskProvider<FlankDoctorTask> =
     tasks.register<FlankDoctorTask>("flankDoctor${variant.name.capitalize()}") {
       flankJarClasspath.from(flankExecutable)
       this@register.variant.set(variant.name)
-      this.testApkDir.set(testApkDir)
+      this.testApk.set(testApk)
     }
+
+fun configureTasks(
+    variant: Variant,
+    appApk: Apk,
+    testApk: Apk,
+    commonExtension: CommonExtension<*, *, *, *>
+) {
+  val yamlWriterTask: TaskProvider<FlankYmlWriterTask> =
+      registerFlankYamlWriter(variant, appApk, commonExtension)
+  yamlWriterTask.configure { this.appApk.set(appApk) }
+  registerFlankRun(
+          variant,
+          testApk,
+      )
+      .configure {
+        flankYaml.set(yamlWriterTask.get().flankYaml)
+        this.appApk.set(appApk)
+      }
+  registerFlankDoctor(variant, testApk).configure {
+    flankYaml.set(yamlWriterTask.get().flankYaml)
+    this.appApk.set(appApk)
+  }
+}
+
+fun registerRunFlankTask() {
+  tasks.register("flankRun") {
+    group = Test.TASK_GROUP
+    description = "Run all androidTest using flank."
+    dependsOn(tasks.withType<FlankRunTask>())
+  }
+}
