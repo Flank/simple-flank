@@ -15,7 +15,16 @@ abstract class SimpleFlankExtension(private val project: Project) {
           .property<String>()
           .convention(credentialsFile.map { defaultProjectId(it.asFile) })
 
-  val hermeticTests = project.objects.property<Boolean>().convention(false)
+  val hermeticTests =
+      project
+          .objects
+          .property<Boolean>()
+          .convention(
+              project
+                  .providers
+                  .gradleProperty("simple-flank.hermeticTests")
+                  .map { it.toBoolean() }
+                  .orElse(false))
 
   private fun defaultProjectId(file: File): String {
     val projectIdRegex = "\"project_id\": \"(.*)\"".toRegex()

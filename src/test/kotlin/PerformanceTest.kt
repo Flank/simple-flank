@@ -36,13 +36,63 @@ class PerformanceTest : GradleTest() {
   }
 
   @Test
-  fun appFlankRunIsCacheable() {
+  fun appFlankRunDumpShardsIsCacheable() {
     projectFromResources("app")
 
     gradleRunner("flankRun", "-PdumpShards=true", "--stacktrace").forwardOutput().build()
     gradleRunner("clean").build()
     val build =
         gradleRunner("flankRun", "-PdumpShards=true", "--stacktrace").forwardOutput().build()
+
+    expectThat(build) {
+      task(":flankRunDebug").isNotNull().isFromCache()
+      task(":flankRun").isNotNull()
+    }
+  }
+
+  @Test
+  fun appFlankRunIsNotCacheableByDefault() {
+    projectFromResources("app")
+
+    gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
+    gradleRunner("clean").build()
+    val build = gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
+
+    expectThat(build) {
+      task(":flankRunDebug").isNotNull().isSuccess()
+      task(":flankRun").isNotNull()
+    }
+  }
+
+  @Test
+  fun appFlankRunIsCacheable() {
+    projectFromResources("app")
+    File(testProjectDir.root, "build.gradle.kts")
+        .appendText(
+            """
+                simpleFlank {
+                  hermeticTests.set(true)
+                }
+            """.trimIndent())
+
+    gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
+    gradleRunner("clean").build()
+    val build = gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
+
+    expectThat(build) {
+      task(":flankRunDebug").isNotNull().isFromCache()
+      task(":flankRun").isNotNull()
+    }
+  }
+
+  @Test
+  fun appFlankRunWithPropertyIsCacheable() {
+    projectFromResources("app")
+    File(testProjectDir.root, "gradle.properties").appendText("simple-flank.hermeticTests=true\n")
+
+    gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
+    gradleRunner("clean").build()
+    val build = gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
 
     expectThat(build) {
       task(":flankRunDebug").isNotNull().isFromCache()

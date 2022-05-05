@@ -9,6 +9,11 @@ repositories {
   mavenCentral()
 }
 
+dependencies {
+  androidTestImplementation("androidx.test:runner:1.4.0")
+  androidTestImplementation("androidx.test:rules:1.4.0")
+}
+
 android {
   compileSdkVersion(30)
   defaultConfig {
@@ -17,6 +22,7 @@ android {
     versionName = "1.0"
     targetSdkVersion(30)
     minSdkVersion(21)
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
   compileOptions {
