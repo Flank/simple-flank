@@ -15,22 +15,11 @@ plugins {
 }
 ```
 
-add your firebase credentials to the rootroject as `ftl-credentials.json`
+add your firebase credentials to the rootproject as `ftl-credentials.json`
 
 That's it, run `./gradlew runFlank` and get the results.
 
 # Optional configuration
-
-## Changing the buildType to run
-
-Android already provides a way for you to do it:
-```
-android {
-  ...
-  testBuildType = "beta"
-  ...
-}
-```
 
 ## Changing the credentials file
 
@@ -50,11 +39,6 @@ simpleFlank {
 }
 ```
 
-## debugging shards
-
-`./gradlew runFlank -PdumpShards=true`
-
-
 or, even better, if all your modules have hermetic tests you can add to the `gradle.properties`:
 `simple-flank.hermeticTests=true`
 
@@ -69,3 +53,25 @@ dependencies {
 ## Orchestrator
 
 `simple-flank` will configure it automatically if you are using "ANDROIDX_TEST_ORCHESTRATOR"
+
+
+# FAQ
+
+## Can I change the buildType to run?
+
+Android already provides a way for you to do it:
+```
+android {
+  ...
+  testBuildType = "beta"
+  ...
+}
+```
+
+## How to debug shards?
+
+`./gradlew runFlank -PdumpShards=true`
+
+## What if I want to use a different flank config?
+
+Feel free to [create your own task](docs/manual_tasks_creation.md) and provide the config yaml you want.
