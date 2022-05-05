@@ -55,6 +55,9 @@ simpleFlank {
 `./gradlew runFlank -PdumpShards=true`
 
 
+or, even better, if all your modules have hermetic tests you can add to the `gradle.properties`:
+`simple-flank.hermeticTests=true`
+
 ## changing Flank version
 
 ```
