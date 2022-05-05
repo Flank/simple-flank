@@ -6,9 +6,8 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 
-abstract class FlankVersionTask : DefaultTask() {
-  @get:Inject protected abstract val execOperations: ExecOperations
-
+abstract class FlankVersionTask @Inject constructor(private val execOperations: ExecOperations) :
+    DefaultTask() {
   @get:InputFiles @get:Classpath abstract val flankJarClasspath: ConfigurableFileCollection
 
   init {

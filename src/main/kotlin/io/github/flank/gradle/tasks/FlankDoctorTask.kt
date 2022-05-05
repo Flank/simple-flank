@@ -8,10 +8,10 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 
-abstract class FlankDoctorTask : BaseFlankApkTask() {
-  @get:Inject protected abstract val projectLayout: ProjectLayout
-  @get:Inject protected abstract val execOperations: ExecOperations
-
+abstract class FlankDoctorTask
+@Inject
+constructor(private val projectLayout: ProjectLayout, private val execOperations: ExecOperations) :
+    BaseFlankApkTask() {
   @get:Input abstract val variant: Property<String>
 
   @get:InputFiles @get:Classpath abstract val flankJarClasspath: ConfigurableFileCollection

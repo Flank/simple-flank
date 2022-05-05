@@ -12,10 +12,12 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
-abstract class CopySmallAppTask : DefaultTask() {
-  @get:Inject protected abstract val fileSystemOperations: FileSystemOperations
-  @get:Inject protected abstract val projectLayout: ProjectLayout
-
+abstract class CopySmallAppTask
+@Inject
+constructor(
+    private val fileSystemOperations: FileSystemOperations,
+    private val projectLayout: ProjectLayout
+) : DefaultTask() {
   @get:InputFiles @get:Classpath abstract val pluginJar: ConfigurableFileCollection
 
   private val apkName = "small-app.apk"
