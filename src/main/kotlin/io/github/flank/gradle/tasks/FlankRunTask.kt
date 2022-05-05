@@ -8,10 +8,13 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 
-abstract class FlankRunTask : BaseFlankApkTask() {
-  @get:Inject protected abstract val objectFactory: ObjectFactory
-  @get:Inject protected abstract val projectLayout: ProjectLayout
-  @get:Inject protected abstract val execOperations: ExecOperations
+abstract class FlankRunTask
+@Inject
+constructor(
+    objectFactory: ObjectFactory,
+    projectLayout: ProjectLayout,
+    private val execOperations: ExecOperations
+) : BaseFlankApkTask() {
 
   @get:Input
   val hermeticTests: Property<Boolean> =

@@ -14,10 +14,10 @@ import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
-abstract class FlankYmlWriterTask : BaseFlankApkTask() {
-  @get:Inject protected abstract val objectFactory: ObjectFactory
-  @get:Inject protected abstract val projectLayout: ProjectLayout
-
+abstract class FlankYmlWriterTask
+@Inject
+constructor(objectFactory: ObjectFactory, private val projectLayout: ProjectLayout) :
+    BaseFlankApkTask() {
   @get:Input abstract val projectId: Property<String>
   @get:Input abstract val flankProject: Property<String>
   @get:Input abstract val variant: Property<String>
