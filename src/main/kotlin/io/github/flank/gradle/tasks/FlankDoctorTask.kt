@@ -31,8 +31,8 @@ abstract class FlankDoctorTask : BaseFlankApkTask() {
         .javaexec {
           classpath = flankJarClasspath
           mainClass.set("ftl.Main")
-          args = listOf("firebase", "test", "android", "doctor")
-          workingDir(projectLayout.buildDirectory.dir("flank/${variant.get()}").get().asFile)
+          args = listOf("firebase", "test", "android", "doctor", "-c=${flankYaml.get()}")
+          workingDir(projectLayout.buildDirectory.dir("flank/${variant.get()}").get())
         }
         .assertNormalExitValue()
   }

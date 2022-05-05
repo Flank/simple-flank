@@ -68,9 +68,8 @@ abstract class FlankRunTask : BaseFlankApkTask() {
         .javaexec {
           classpath = flankJarClasspath
           mainClass.set("ftl.Main")
-          environment(
-              mapOf("GOOGLE_APPLICATION_CREDENTIALS" to serviceAccountCredentials.get().asFile))
-          args = listOf("firebase", "test", "android", "run")
+          environment(mapOf("GOOGLE_APPLICATION_CREDENTIALS" to serviceAccountCredentials.get()))
+          args = listOf("firebase", "test", "android", "run", "-c=${flankYaml.get()}")
           if (dumpShards.get()) args("--dump-shards")
           if (dry.get()) args("--dry")
 
