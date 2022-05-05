@@ -118,7 +118,7 @@ fun configureTasks(
     commonExtension: CommonExtension<*, *, *, *>
 ) {
   val yamlWriterTask: TaskProvider<FlankYmlWriterTask> =
-      registerFlankYamlWriter(variant, appApk, commonExtension)
+      registerFlankYamlWriter(variant, testApk, commonExtension)
   yamlWriterTask.configure { this.appApk.set(appApk) }
   registerFlankRun(
           variant,
