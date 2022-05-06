@@ -1,19 +1,22 @@
 package io.github.flank.gradle.tasks
 
-import io.github.flank.gradle.AvailableVirtualDevice
+import io.github.flank.gradle.Device
 import java.io.File
 import javax.inject.Inject
 import org.gradle.api.file.Directory
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 
+@DisableCachingByDefault(because = "This task is faster to run than to download")
 abstract class FlankYmlWriterTask
 @Inject
 constructor(objectFactory: ObjectFactory, private val projectLayout: ProjectLayout) :
@@ -22,7 +25,7 @@ constructor(objectFactory: ObjectFactory, private val projectLayout: ProjectLayo
   @get:Input abstract val flankProject: Property<String>
   @get:Input abstract val variant: Property<String>
 
-  @get:Nested abstract val device: Property<AvailableVirtualDevice>
+  @get:Nested abstract val devices: ListProperty<Device>
 
   @get:Input abstract val useOrchestrator: Property<Boolean>
 
@@ -47,7 +50,7 @@ constructor(objectFactory: ObjectFactory, private val projectLayout: ProjectLayo
             projectId.get(),
             flankProject.get(),
             variant.get(),
-            device.get(),
+            devices.get(),
             appApk.get().singleFile().asFile.relativeTo(workingDir.get().asFile),
             testApk.get().singleFile().asFile.relativeTo(workingDir.get().asFile),
             useOrchestrator.get(),
@@ -60,7 +63,7 @@ constructor(objectFactory: ObjectFactory, private val projectLayout: ProjectLayo
       projectId: String,
       flankProject: String,
       variant: String,
-      device: AvailableVirtualDevice,
+      devices: List<Device>,
       appApk: File,
       testApk: File,
       useOrchestrator: Boolean,
@@ -70,9 +73,16 @@ constructor(objectFactory: ObjectFactory, private val projectLayout: ProjectLayo
       gcloud:
         app: $appApk
         test: $testApk
-        device:
-        - model: "${device.id}"
-          version: "${device.osVersion}"
+        device: ${
+          devices.joinToString("") { device -> """
+          - model: "${device.id}"
+            version: "${device.osVersion}"""" +
+              if (device.locale!=null) """
+            locale: "${device.locale}"""" else {""} +
+              if (device.orientation!=null) """
+            orientation: "${device.orientation}"""" else {""}
+          }
+        }
 
         use-orchestrator: $useOrchestrator
         auto-google-login: false
