@@ -11,7 +11,7 @@ Apply the plugin on the application/library modules you want to run tests:
 ```
 plugins {
   ...
-  id("com.github.flank.gradle.simple-flank")
+  id("io.github.flank.gradle.simple-flank")
 }
 ```
 
