@@ -72,16 +72,18 @@ fun registerFlankYamlWriter(
     androidExtension: CommonExtension<*, *, *, *>
 ): TaskProvider<FlankYmlWriterTask> =
     tasks.register<FlankYmlWriterTask>("flankYaml${variant.name.capitalize()}") {
-      projectId.set(simpleFlankExtension.projectId)
-      flankProject.set(getFlankProject())
-      this@register.variant.set(variant.name)
-      useOrchestrator.set(
+      projectId.convention(simpleFlankExtension.projectId)
+      flankProject.convention(getFlankProject())
+      this@register.variant.convention(variant.name)
+      useOrchestrator.convention(
           provider {
             androidExtension.testOptions.execution.toUpperCase() == "ANDROIDX_TEST_ORCHESTRATOR"
           })
 
-      device.set(NexusLowRes.deviceForMinSdk(variant.minSdkVersion.apiLevel))
-      this.testApk.set(testApk)
+      devices.convention(
+          simpleFlankExtension.devices.orElse(
+              provider { listOf(NexusLowRes.deviceForMinSdk(variant.minSdkVersion.apiLevel)) }))
+      this.testApk.convention(testApk)
     }
 
 fun registerFlankRun(

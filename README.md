@@ -42,6 +42,18 @@ simpleFlank {
 or, even better, if all your modules have hermetic tests you can add to the `gradle.properties`:
 `simple-flank.hermeticTests=true`
 
+## Choosing the devices manually
+
+```
+simpleFlank {
+  devices.set(listOf(
+    io.github.flank.gradle.NexusLowRes(23),
+    io.github.flank.gradle.NexusLowRes(30, "es_ES", io.github.flank.gradle.Device.Orientation.landscape),
+    io.github.flank.gradle.Device("oriole",31,"Google","Pixel 6")
+  ))
+}
+```
+
 ## changing Flank version
 
 ```

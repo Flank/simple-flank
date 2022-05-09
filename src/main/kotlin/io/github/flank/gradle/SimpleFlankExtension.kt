@@ -3,6 +3,7 @@ package io.github.flank.gradle
 import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.property
 
@@ -25,6 +26,8 @@ abstract class SimpleFlankExtension(private val project: Project) {
                   .gradleProperty("simple-flank.hermeticTests")
                   .map { it.toBoolean() }
                   .orElse(false))
+
+  val devices: ListProperty<Device> = project.objects.listProperty(Device::class.java).value(null)
 
   private fun defaultProjectId(file: File): String {
     val projectIdRegex = "\"project_id\": \"(.*)\"".toRegex()
