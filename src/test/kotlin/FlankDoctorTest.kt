@@ -52,4 +52,22 @@ class FlankDoctorTest : GradleTest() {
 
     expectThat(build) { task(":flankDoctorDebug").isNotNull().isSuccess() }
   }
+
+  @Test
+  fun validYamlDownloadingFiles() {
+    projectFromResources("app")
+    File(testProjectDir.root, "build.gradle.kts")
+        .appendText(
+            """
+        tasks.withType<io.github.flank.gradle.tasks.FlankYmlWriterTask>().configureEach {
+          directoriesToPull.set(listOf("/sdcard/"))
+          filesToDownload.set(listOf("a.txt","b.txt"))
+          keepFilePath.set(true)
+        }
+        """.trimIndent())
+
+    val build = gradleRunner("flankDoctorDebug", "--stacktrace").forwardOutput().build()
+
+    expectThat(build) { task(":flankDoctorDebug").isNotNull().isSuccess() }
+  }
 }
