@@ -12,6 +12,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
@@ -28,6 +29,14 @@ constructor(objectFactory: ObjectFactory, private val projectLayout: ProjectLayo
   @get:Nested abstract val devices: ListProperty<Device>
 
   @get:Input abstract val useOrchestrator: Property<Boolean>
+
+  @get:Input
+  val maxTestShards: Property<Int> = objectFactory.property(Int::class.java).convention(40)
+  @get:Input val shardTime: Property<Int> = objectFactory.property(Int::class.java).convention(120)
+
+  @get:Input @get:Optional abstract val directoriesToPull: ListProperty<String>
+  @get:Input @get:Optional abstract val filesToDownload: ListProperty<String>
+  @get:Input @get:Optional abstract val keepFilePath: Property<Boolean>
 
   private val workingDir: Provider<Directory> =
       variant.flatMap { projectLayout.buildDirectory.dir("flank/$it") }
@@ -59,6 +68,23 @@ constructor(objectFactory: ObjectFactory, private val projectLayout: ProjectLayo
     logger.debug(flankYaml.get().asFile.readText())
   }
 
+  private fun optional(key: String, provider: Provider<*>, indent: Int): String =
+      if (provider.isPresent) {
+        "\n" + " ".repeat(indent) + "$key: ${provider.get()}"
+      } else ""
+
+  private fun optional(key: String, provider: ListProperty<*>, indent: Int): String =
+      if (provider.isPresent && provider.get().isNotEmpty()) {
+        provider.get().joinToString(
+                prefix = "\n" + " ".repeat(indent) + "$key:\n" + " ".repeat(indent + 2) + "- ",
+                separator = "\n" + " ".repeat(indent + 2) + "- ") { "$it" }
+      } else ""
+
+  private fun optionalValue(key: String, value: Any?, indent: Int): String =
+      if (value != null) {
+        "\n" + " ".repeat(indent) + "$key: $value"
+      } else ""
+
   private fun File.writeYaml(
       projectId: String,
       flankProject: String,
@@ -70,41 +96,32 @@ constructor(objectFactory: ObjectFactory, private val projectLayout: ProjectLayo
   ) {
     writeText(
         """
-      gcloud:
-        app: $appApk
-        test: $testApk
-        device: ${
-          devices.joinToString("") { device -> """
-          - model: "${device.id}"
-            version: "${device.osVersion}"""" +
-              if (device.locale!=null) """
-            locale: "${device.locale}"""" else {""} +
-              if (device.orientation!=null) """
-            orientation: "${device.orientation}"""" else {""}
-          }
-        }
-
-        use-orchestrator: $useOrchestrator
-        auto-google-login: false
-        record-video: false
-        performance-metrics: false
-        timeout: 15m
-        results-history-name: $flankProject.$variant
-        num-flaky-test-attempts: 0
-
-      flank:
-        max-test-shards: 40
-        shard-time: 120
-        smart-flank-gcs-path: gs://$projectId/$flankProject.$variant/JUnitReport.xml
-        keep-file-path: false
-        ignore-failed-tests: false
-        disable-sharding: false
-        smart-flank-disable-upload: false
-        legacy-junit-result: false
-        full-junit-result: false
-        output-style: single
-        default-test-time: 1.0
-        use-average-test-time-for-new-tests: true
-    """.trimIndent())
+gcloud:
+  app: $appApk
+  test: $testApk
+  device: ${
+    devices.joinToString("") { device -> """
+    - model: ${device.id}
+      version: "${device.osVersion}"""" +
+        optionalValue("locale",device.locale,6) +
+        optionalValue("orientation",device.orientation,6)
+    }
+  }
+  results-history-name: $flankProject.$variant
+  use-orchestrator: $useOrchestrator
+""" +
+            optional("directories-to-pull", directoriesToPull, 2))
+    appendText(
+        """
+flank:
+  smart-flank-gcs-path: gs://$projectId/$flankProject.$variant/JUnitReport.xml
+  max-test-shards: ${maxTestShards.get()}
+  shard-time: ${shardTime.get()}
+  default-test-time: 1
+  use-average-test-time-for-new-tests: true
+  output-style: single
+""" +
+            optional("files-to-download", filesToDownload, 2) +
+            optional("keep-file-path", keepFilePath, 2))
   }
 }
