@@ -23,13 +23,18 @@ open class Device(
     landscape
   }
 
-  interface MinSdk {
+  interface DeviceProducer {
+    val id: String
+    val make: String
+    val model: String
+  }
+
+  interface MinSdk : DeviceProducer {
     val sdks: List<Int>
     fun deviceForMinSdk(minSdk: Int): Device
     fun selectedVersionForMinSdk(minSdk: Int): Int {
       return sdks.firstOrNull { it >= minSdk }
-          ?: throw NoSuchElementException(
-              "NexusLowRes doesn't support $minSdk (currently supports ${NexusLowRes.sdks})")
+          ?: throw NoSuchElementException("$id doesn't support $minSdk (currently supports $sdks)")
     }
   }
 
@@ -37,8 +42,11 @@ open class Device(
 }
 
 class NexusLowRes(osVersion: Int, locale: String? = null, orientation: Orientation? = null) :
-    Device("NexusLowRes", osVersion, "Generic", "Low-resolution MDPI phone", locale, orientation) {
+    Device(id, osVersion, make, model, locale, orientation) {
   companion object : MinSdk {
+    override val id = "NexusLowRes"
+    override val make = "Generic"
+    override val model = "Low-resolution MDPI phone"
     override val sdks = listOf(23, 24, 25, 26, 27, 28, 29, 30)
     override fun deviceForMinSdk(minSdk: Int) = NexusLowRes(selectedVersionForMinSdk(minSdk))
   }
