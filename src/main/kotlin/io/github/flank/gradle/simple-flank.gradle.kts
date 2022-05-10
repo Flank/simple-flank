@@ -31,18 +31,24 @@ plugins.withType<AppPlugin> {
       val appApk: Apk = Apk.from(debugApkDir, builtArtifactsLoader)
       val testApk: Apk = Apk.from(testApkDir, builtArtifactsLoader)
 
-      variant.androidTest?.instrumentationRunner
-      configureTasks(
-          variant,
-          variant.androidTest!!,
-          appApk,
-          testApk,
-          requireNotNull(project.extensions.findByType<ApplicationExtension>()))
+      val applicationExtension =
+          requireNotNull(project.extensions.findByType<ApplicationExtension>())
+      configureTasks(variant, variant.androidTest!!, appApk, testApk, applicationExtension)
+
+      val signingConfigName =
+          applicationExtension.buildTypes.getByName(variant.buildType!!).signingConfig?.name
+      val signingConfig =
+          signingConfigName?.let { applicationExtension.signingConfigs.named(it).get() }
+      tasks.named<FlankRunTask>("flankRun${variant.name.capitalize()}").configure {
+        doFirst {
+          verifyNotDefaultKeystore(
+              this@configure.variant.get(), hermeticTests.getOrElse(false), logger, signingConfig)
+        }
+      }
     }
   }
   tasks.register<FlankVersionTask>("flankVersion") { flankJarClasspath.from(flankExecutable) }
   registerRunFlankTask()
-  verifyNotDefaultKeystore()
 }
 
 plugins.withType<LibraryPlugin> {
@@ -56,7 +62,6 @@ plugins.withType<LibraryPlugin> {
       val appApk: Apk = Apk.from(copySmallAppTask.appApk)
       val testApk: Apk = Apk.from(testApkDir, builtArtifactsLoader)
 
-      variant.androidTest?.instrumentationRunner
       configureTasks(
           variant,
           variant.androidTest!!,

@@ -1,25 +1,31 @@
 package io.github.flank.gradle.utils
 
-import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.SigningConfig
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.internal.tasks.ValidateSigningTask
 import io.github.flank.gradle.SimpleFlankExtension
 import java.io.File
 import org.gradle.api.Project
+import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.Copy
 import org.gradle.kotlin.dsl.maybeCreate
 import org.gradle.kotlin.dsl.withType
 
-fun Project.verifyNotDefaultKeystore() {
-  val androidExtension = project.extensions.getByName("android") as ApplicationExtension
-  afterEvaluate {
-    androidExtension.signingConfigs {
-      named("debug") {
-        if (storeFile?.path?.contains("/.android/debug.keystore") == true) {
-          println(
-              "Warning: The debug keystore should be set, using the default means the cache won't work")
-        }
-      }
+fun verifyNotDefaultKeystore(
+    variantName: String,
+    hermeticTest: Boolean,
+    logger: Logger,
+    signingConfig: SigningConfig?
+) {
+  val signingConfigFile = signingConfig?.storeFile
+
+  if (signingConfigFile?.path?.contains("/.android/debug.keystore") != false) {
+    val message =
+        "The $variantName keystore should be set, using the default means the cache won't work"
+    if (hermeticTest) {
+      throw RuntimeException(message, null)
+    } else {
+      logger.warn("Warning: $message")
     }
   }
 }
