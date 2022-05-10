@@ -35,10 +35,13 @@ plugins.withType<AppPlugin> {
           requireNotNull(project.extensions.findByType<ApplicationExtension>())
       configureTasks(variant, variant.androidTest!!, appApk, testApk, applicationExtension)
 
-      tasks.named("flankRun${variant.name.capitalize()}").configure {
+      val signingConfigName =
+          applicationExtension.buildTypes.getByName(variant.buildType!!).signingConfig?.name!!
+      val signingConfig = applicationExtension.signingConfigs.named(signingConfigName).get()
+      tasks.named<FlankRunTask>("flankRun${variant.name.capitalize()}").configure {
         doFirst {
           verifyNotDefaultKeystore(
-              applicationExtension, variant, simpleFlankExtension.hermeticTests, logger)
+              this@configure.variant.get(), hermeticTests.getOrElse(false), logger, signingConfig)
         }
       }
     }
@@ -58,7 +61,6 @@ plugins.withType<LibraryPlugin> {
       val appApk: Apk = Apk.from(copySmallAppTask.appApk)
       val testApk: Apk = Apk.from(testApkDir, builtArtifactsLoader)
 
-      variant.androidTest?.instrumentationRunner
       configureTasks(
           variant,
           variant.androidTest!!,

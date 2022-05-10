@@ -70,6 +70,21 @@ class PerformanceTest : GradleTest() {
     File(testProjectDir.root, "build.gradle.kts")
         .appendText(
             """
+                android {
+                  signingConfigs {
+                    create("mySigning") {
+                      storeFile = File(projectDir, "someKeystore")
+                      keyAlias = "debugKey"
+                      keyPassword = "debugKeystore"
+                      storePassword = "debugKeystore"
+                    }
+                  }
+                  buildTypes {
+                    getByName("debug") {
+                      signingConfig = signingConfigs.getByName("mySigning")
+                    }
+                  }
+                }
                 simpleFlank {
                   hermeticTests.set(true)
                 }
@@ -88,6 +103,26 @@ class PerformanceTest : GradleTest() {
   @Test
   fun appFlankRunWithPropertyIsCacheable() {
     projectFromResources("app")
+    File(testProjectDir.root, "build.gradle.kts")
+        .appendText(
+            """
+                android {
+                  signingConfigs {
+                    create("mySigning") {
+                      storeFile = File(projectDir, "someKeystore")
+                      keyAlias = "debugKey"
+                      keyPassword = "debugKeystore"
+                      storePassword = "debugKeystore"
+                    }
+                  }
+                  buildTypes {
+                    getByName("debug") {
+                      signingConfig = signingConfigs.getByName("mySigning")
+                    }
+                  }
+                }
+            """.trimIndent())
+
     File(testProjectDir.root, "gradle.properties").appendText("simple-flank.hermeticTests=true\n")
 
     gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
