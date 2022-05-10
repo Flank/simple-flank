@@ -15,11 +15,11 @@ fun verifyNotDefaultKeystore(
     variantName: String,
     hermeticTest: Boolean,
     logger: Logger,
-    signingConfig: SigningConfig
+    signingConfig: SigningConfig?
 ) {
-  val signingConfigFile = signingConfig.storeFile
+  val signingConfigFile = signingConfig?.storeFile
 
-  if (signingConfigFile?.path?.contains("/.android/debug.keystore") == true) {
+  if (signingConfigFile?.path?.contains("/.android/debug.keystore") != false) {
     val message =
         "The $variantName keystore should be set, using the default means the cache won't work"
     if (hermeticTest) {

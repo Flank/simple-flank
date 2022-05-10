@@ -28,6 +28,27 @@ class SigningValidationTest : GradleTest() {
   }
 
   @Test
+  fun failIfNoSigningAndHermeticTests() {
+    projectFromResources("app")
+    File(testProjectDir.root, "build.gradle.kts")
+        .appendText(
+            """
+      android {
+          testBuildType = "beta"
+      
+          buildTypes {
+              create("beta")
+          }
+      }
+      simpleFlank {
+        hermeticTests.set(true)
+      }
+    """.trimIndent())
+
+    gradleRunner("flankRunDebug").forwardOutput().buildAndFail()
+  }
+
+  @Test
   fun workFineIfCustomSigning() {
     projectFromResources("app")
     File(testProjectDir.root, "build.gradle.kts")

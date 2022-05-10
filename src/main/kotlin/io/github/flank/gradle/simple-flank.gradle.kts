@@ -36,8 +36,9 @@ plugins.withType<AppPlugin> {
       configureTasks(variant, variant.androidTest!!, appApk, testApk, applicationExtension)
 
       val signingConfigName =
-          applicationExtension.buildTypes.getByName(variant.buildType!!).signingConfig?.name!!
-      val signingConfig = applicationExtension.signingConfigs.named(signingConfigName).get()
+          applicationExtension.buildTypes.getByName(variant.buildType!!).signingConfig?.name
+      val signingConfig =
+          signingConfigName?.let { applicationExtension.signingConfigs.named(it).get() }
       tasks.named<FlankRunTask>("flankRun${variant.name.capitalize()}").configure {
         doFirst {
           verifyNotDefaultKeystore(
