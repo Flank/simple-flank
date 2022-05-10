@@ -8,6 +8,7 @@ import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
@@ -37,6 +38,13 @@ constructor(objectFactory: ObjectFactory, private val projectLayout: ProjectLayo
   @get:Input @get:Optional abstract val directoriesToPull: ListProperty<String>
   @get:Input @get:Optional abstract val filesToDownload: ListProperty<String>
   @get:Input @get:Optional abstract val keepFilePath: Property<Boolean>
+
+  @get:Input @get:Optional abstract val environmentVariables: MapProperty<String, String>
+
+  @get:Input @get:Optional abstract val additionalGcloudOptions: MapProperty<String, String>
+  @get:Input @get:Optional abstract val additionalFlankOptions: MapProperty<String, String>
+
+  @get:Input @get:Optional abstract val skipConfigValidation: Property<Boolean>
 
   private val workingDir: Provider<Directory> =
       variant.flatMap { projectLayout.buildDirectory.dir("flank/$it") }
@@ -75,9 +83,21 @@ constructor(objectFactory: ObjectFactory, private val projectLayout: ProjectLayo
 
   private fun optional(key: String, provider: ListProperty<*>, indent: Int): String =
       if (provider.isPresent && provider.get().isNotEmpty()) {
-        provider.get().joinToString(
+        provider
+            .get()
+            .joinToString(
                 prefix = "\n" + " ".repeat(indent) + "$key:\n" + " ".repeat(indent + 2) + "- ",
-                separator = "\n" + " ".repeat(indent + 2) + "- ") { "$it" }
+                separator = "\n" + " ".repeat(indent + 2) + "- ")
+      } else ""
+
+  private fun optional(key: String, provider: MapProperty<*, *>, indent: Int): String =
+      if (provider.isPresent && provider.get().isNotEmpty()) {
+        provider
+            .get()
+            .map { "${it.key}: ${it.value}" }
+            .joinToString(
+                prefix = "\n" + " ".repeat(indent) + "$key:\n" + " ".repeat(indent + 2),
+                separator = "\n" + " ".repeat(indent + 2))
       } else ""
 
   private fun optionalValue(key: String, value: Any?, indent: Int): String =
@@ -110,7 +130,12 @@ gcloud:
   results-history-name: $flankProject.$variant
   use-orchestrator: $useOrchestrator
 """ +
-            optional("directories-to-pull", directoriesToPull, 2))
+            optional("directories-to-pull", directoriesToPull, 2) +
+            optional("environment-variables", environmentVariables, 2) +
+            additionalGcloudOptions
+                .getOrElse(emptyMap())
+                .map { optionalValue(it.key, it.value, 2) }
+                .joinToString(separator = ""))
     appendText(
         """
 flank:
@@ -122,6 +147,11 @@ flank:
   output-style: single
 """ +
             optional("files-to-download", filesToDownload, 2) +
-            optional("keep-file-path", keepFilePath, 2))
+            optional("keep-file-path", keepFilePath, 2) +
+            optional("skip-config-validation", skipConfigValidation, 2) +
+            additionalFlankOptions
+                .getOrElse(emptyMap())
+                .map { optionalValue(it.key, it.value, 2) }
+                .joinToString(separator = ""))
   }
 }
