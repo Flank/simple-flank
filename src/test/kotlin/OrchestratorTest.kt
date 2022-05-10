@@ -22,7 +22,7 @@ class OrchestratorTest : GradleTest() {
             """
       android {
         defaultConfig {
-          testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+          testInstrumentationRunner = "io.flank.example.MyAndroidJUnitRunner"
           testInstrumentationRunnerArguments += mapOf(
             "clearPackageData" to "true",
             "disableAnalytics" to "true",
@@ -47,6 +47,10 @@ class OrchestratorTest : GradleTest() {
     gradleRunner("flankYamlDebug").forwardOutput().build()
 
     val flankYaml = File(testProjectDir.root, "build/flank/debug/flank.yml").readText()
-    expectThat(flankYaml) { contains("use-orchestrator: true") }
+    expectThat(flankYaml) {
+      contains("use-orchestrator: true")
+      contains("test-runner-class: io.flank.example.MyAndroidJUnitRunner")
+      contains("clearPackageData: true")
+    }
   }
 }
