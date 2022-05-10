@@ -30,6 +30,7 @@ constructor(objectFactory: ObjectFactory, private val projectLayout: ProjectLayo
   @get:Nested abstract val devices: ListProperty<Device>
 
   @get:Input abstract val useOrchestrator: Property<Boolean>
+  @get:Input @get:Optional abstract val testRunnerClass: Property<String>
 
   @get:Input
   val maxTestShards: Property<Int> = objectFactory.property(Int::class.java).convention(40)
@@ -130,6 +131,7 @@ gcloud:
   results-history-name: $flankProject.$variant
   use-orchestrator: $useOrchestrator
 """ +
+            optional("test-runner-class", testRunnerClass, 2) +
             optional("directories-to-pull", directoriesToPull, 2) +
             optional("environment-variables", environmentVariables, 2) +
             additionalGcloudOptions
