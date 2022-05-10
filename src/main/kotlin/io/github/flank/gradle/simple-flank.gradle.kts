@@ -31,18 +31,20 @@ plugins.withType<AppPlugin> {
       val appApk: Apk = Apk.from(debugApkDir, builtArtifactsLoader)
       val testApk: Apk = Apk.from(testApkDir, builtArtifactsLoader)
 
-      variant.androidTest?.instrumentationRunner
-      configureTasks(
-          variant,
-          variant.androidTest!!,
-          appApk,
-          testApk,
-          requireNotNull(project.extensions.findByType<ApplicationExtension>()))
+      val applicationExtension =
+          requireNotNull(project.extensions.findByType<ApplicationExtension>())
+      configureTasks(variant, variant.androidTest!!, appApk, testApk, applicationExtension)
+
+      tasks.named("flankRun${variant.name.capitalize()}").configure {
+        doFirst {
+          verifyNotDefaultKeystore(
+              applicationExtension, variant, simpleFlankExtension.hermeticTests, logger)
+        }
+      }
     }
   }
   tasks.register<FlankVersionTask>("flankVersion") { flankJarClasspath.from(flankExecutable) }
   registerRunFlankTask()
-  verifyNotDefaultKeystore()
 }
 
 plugins.withType<LibraryPlugin> {
