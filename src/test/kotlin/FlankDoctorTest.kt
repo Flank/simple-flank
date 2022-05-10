@@ -9,6 +9,15 @@ class FlankDoctorTest : GradleTest() {
   @Test
   fun doctor() {
     projectFromResources("app")
+    File(testProjectDir.root, "build.gradle.kts")
+        .appendText(
+            """
+      android {
+        defaultConfig {
+          testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunnercillo"
+        }
+      }
+    """.trimIndent())
 
     val build = gradleRunner("flankDoctorDebug", "--stacktrace").forwardOutput().build()
 
@@ -63,6 +72,56 @@ class FlankDoctorTest : GradleTest() {
           directoriesToPull.set(listOf("/sdcard/"))
           filesToDownload.set(listOf("a.txt","b.txt"))
           keepFilePath.set(true)
+        }
+        """.trimIndent())
+
+    val build = gradleRunner("flankDoctorDebug", "--stacktrace").forwardOutput().build()
+
+    expectThat(build) { task(":flankDoctorDebug").isNotNull().isSuccess() }
+  }
+
+  @Test
+  fun validYamlWithEnvVars() {
+    projectFromResources("app")
+    File(testProjectDir.root, "build.gradle.kts")
+        .appendText(
+            """
+        tasks.withType<io.github.flank.gradle.tasks.FlankYmlWriterTask>().configureEach {
+          environmentVariables.set(mapOf("clearPackageData" to "true", "something" to "1", "whatever" to "I don't know"))
+        }
+        """.trimIndent())
+
+    val build = gradleRunner("flankDoctorDebug", "--stacktrace").forwardOutput().build()
+
+    expectThat(build) { task(":flankDoctorDebug").isNotNull().isSuccess() }
+  }
+
+  @Test
+  fun validYamlWithAdditionalOptions() {
+    projectFromResources("app")
+    File(testProjectDir.root, "build.gradle.kts")
+        .appendText(
+            """
+        tasks.withType<io.github.flank.gradle.tasks.FlankYmlWriterTask>().configureEach {
+          additionalGcloudOptions.set(mapOf("test-runner-class" to "a.b.c", "record-video" to "true"))
+          additionalFlankOptions.set(mapOf("custom-sharding-json" to "./custom_sharding.json"))
+        }
+        """.trimIndent())
+
+    val build = gradleRunner("flankDoctorDebug", "--stacktrace").forwardOutput().build()
+
+    expectThat(build) { task(":flankDoctorDebug").isNotNull().isSuccess() }
+  }
+
+  @Test
+  fun validYamlSkipConfigValidation() {
+    projectFromResources("app")
+    File(testProjectDir.root, "build.gradle.kts")
+        .appendText(
+            """
+        tasks.withType<io.github.flank.gradle.tasks.FlankYmlWriterTask>().configureEach {
+          shardTime.set(-2)
+          skipConfigValidation.set(true)
         }
         """.trimIndent())
 
