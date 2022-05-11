@@ -68,7 +68,7 @@ class FlankDoctorTest : GradleTest() {
     File(testProjectDir.root, "build.gradle.kts")
         .appendText(
             """
-        tasks.withType<io.github.flank.gradle.tasks.FlankYmlWriterTask>().configureEach {
+        simpleFlank {
           directoriesToPull.set(listOf("/sdcard/"))
           filesToDownload.set(listOf("a.txt","b.txt"))
           keepFilePath.set(true)

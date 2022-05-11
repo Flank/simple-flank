@@ -21,36 +21,65 @@ That's it, run `./gradlew flankRun` and get the results.
 
 # Optional configuration
 
-## Changing the credentials file
-
-```
+```kotlin
 simpleFlank {
-  credentialsFile.set(project.rootProject.file("some-credentials.json"))
-}
-```
-
-## Making the tests cacheable
-
-If you are using the Gradle BuildCache, you just need to declare your tests as hermetic ( isolated and reproducible )
-
-```
-simpleFlank {
+  // Changing the credentials file, default: rootProject.file("ftl-credentials.json")
+  credentialsFile.set(file("some-credentials.json"))
+  
+  // Making the tests cacheable
   hermeticTests.set(true)
-}
-```
+  // if all modules have hermetic tests, add `simple-flank.hermeticTests=true` to your `gradle.properties`
 
-or, even better, if all your modules have hermetic tests you can add to the `gradle.properties`:
-`simple-flank.hermeticTests=true`
-
-## Choosing the devices manually
-
-```
-simpleFlank {
+  // Choosing the devices manually
+  // default is NexusLowRes, and the minSdk from the project
   devices.set(listOf(
     io.github.flank.gradle.NexusLowRes(23),
     io.github.flank.gradle.NexusLowRes(30, "es_ES", io.github.flank.gradle.Device.Orientation.landscape),
-    io.github.flank.gradle.Device("oriole",31,"Google","Pixel 6")
+    io.github.flank.gradle.Device("oriole", 31, "Google", "Pixel 6")
   ))
+
+  // Filtering tests
+  testTargets {
+    inClass("io.flank.sample.TestClass")
+    notInClass("io.flank.sample.NotATestClass", "io.flank.sample.NotATestClassEither")
+
+    small() // or medium() or large()
+
+    annotation("io.flank.test.InstrumentationTest")
+    notAnnotation("io.flank.test.Flaky")
+
+    inPackage("io.flank.sample")
+    notInPackage("io.flank.external")
+
+    testFile("/sdcard/tmp/testFile.txt")
+    notTestFile("/sdcard/tmp/notTestFile.txt")
+
+    regex("BarTest.*")
+
+    filter("com.android.foo.MyCustomFilter", "com.android.foo.AnotherCustomFilter")
+
+    runnerBuilder("com.android.foo.MyCustomBuilder", "com.android.foo.AnotherCustomBuilder")
+  }
+
+  // EnvironmentVariables
+  // default 
+  environmentVariables.set(mapOf("clearPackageData" to "true", "something" to "1", "whatever" to "I don't know"))
+
+  // default extracted from credentials
+  projectId.set("my-GCP-project")
+
+  // Downloading files
+  directoriesToPull.set(listOf("/sdcard/"))
+  filesToDownload.set(listOf("a.txt","b.txt"))
+  keepFilePath.set(true)
+
+
+  // other options
+  testTimeout.set("15m")
+  recordVideo.set(true)
+  numFlakyTestAttempts.set(3)
+  failFast.set(true)
+  performanceMetrics.set(true)
 }
 ```
 
@@ -64,7 +93,7 @@ dependencies {
 
 ## Orchestrator
 
-`simple-flank` will configure it automatically if you are using "ANDROIDX_TEST_ORCHESTRATOR"
+`simple-flank` will configure it automatically if you are using `ANDROIDX_TEST_ORCHESTRATOR`
 
 
 # FAQ
