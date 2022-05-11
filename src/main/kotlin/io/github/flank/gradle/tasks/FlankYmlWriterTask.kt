@@ -36,11 +36,19 @@ constructor(objectFactory: ObjectFactory, private val projectLayout: ProjectLayo
   val maxTestShards: Property<Int> = objectFactory.property(Int::class.java).convention(40)
   @get:Input val shardTime: Property<Int> = objectFactory.property(Int::class.java).convention(120)
 
+  @get:Input @get:Optional abstract val testTimeout: Property<String>
+
   @get:Input @get:Optional abstract val directoriesToPull: ListProperty<String>
   @get:Input @get:Optional abstract val filesToDownload: ListProperty<String>
   @get:Input @get:Optional abstract val keepFilePath: Property<Boolean>
 
   @get:Input @get:Optional abstract val environmentVariables: MapProperty<String, String>
+
+  @get:Input @get:Optional abstract val recordVideo: Property<Boolean>
+  @get:Input @get:Optional abstract val numFlakyTestAttempts: Property<Int>
+  @get:Input @get:Optional abstract val failFast: Property<Boolean>
+  @get:Input @get:Optional abstract val performanceMetrics: Property<Boolean>
+  @get:Input @get:Optional abstract val testTargets: ListProperty<String>
 
   @get:Input @get:Optional abstract val additionalGcloudOptions: MapProperty<String, String>
   @get:Input @get:Optional abstract val additionalFlankOptions: MapProperty<String, String>
@@ -131,8 +139,14 @@ gcloud:
   results-history-name: $flankProject.$variant
   use-orchestrator: $useOrchestrator
 """ +
+            optional("timeout", testTimeout, 2) +
             optional("test-runner-class", testRunnerClass, 2) +
             optional("directories-to-pull", directoriesToPull, 2) +
+            optional("record-video", recordVideo, 2) +
+            optional("num-flaky-test-attempts", numFlakyTestAttempts, 2) +
+            optional("fail-fast", failFast, 2) +
+            optional("performance-metrics", performanceMetrics, 2) +
+            optional("test-targets", testTargets, 2) +
             optional("environment-variables", environmentVariables, 2) +
             additionalGcloudOptions
                 .getOrElse(emptyMap())

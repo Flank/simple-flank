@@ -92,15 +92,29 @@ fun registerFlankYamlWriter(
           })
 
       testRunnerClass.convention(androidTest.instrumentationRunner)
-      androidExtension.defaultConfig.testInstrumentationRunnerArguments["clearPackageData"]?.let {
-        environmentVariables.convention(mapOf("clearPackageData" to it))
-      }
 
       devices.convention(
           simpleFlankExtension.devices.orElse(
               provider { listOf(NexusLowRes.deviceForMinSdk(variant.minSdkVersion.apiLevel)) }))
       this.appApk.set(appApk)
       this.testApk.convention(testApk)
+
+      testTimeout.convention(simpleFlankExtension.testTimeout)
+
+      directoriesToPull.convention(simpleFlankExtension.directoriesToPull)
+      filesToDownload.convention(simpleFlankExtension.filesToDownload)
+      keepFilePath.convention(simpleFlankExtension.keepFilePath)
+
+      recordVideo.convention(simpleFlankExtension.recordVideo)
+      numFlakyTestAttempts.convention(simpleFlankExtension.numFlakyTestAttempts)
+      failFast.convention(simpleFlankExtension.failFast)
+      performanceMetrics.convention(simpleFlankExtension.performanceMetrics)
+      testTargets.convention(simpleFlankExtension.testTargets)
+
+      environmentVariables.convention(simpleFlankExtension.environmentVariables)
+      androidExtension.defaultConfig.testInstrumentationRunnerArguments["clearPackageData"]?.let {
+        simpleFlankExtension.environmentVariables.convention(mapOf("clearPackageData" to it))
+      }
     }
 
 fun registerFlankRun(

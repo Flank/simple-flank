@@ -189,12 +189,7 @@ class PerformanceTest : GradleTest() {
 
     val storingBuild: BuildResult =
         try {
-          gradleRunner(
-                  "flankRun",
-                  "-PdumpShards=true",
-                  "--configuration-cache",
-                  "--dry-run",
-                  "--stacktrace")
+          gradleRunner("flankRun", "--configuration-cache", "--dry-run", "--stacktrace")
               .forwardOutput()
               .build()
         } catch (e: UnexpectedBuildFailure) {
@@ -209,12 +204,7 @@ class PerformanceTest : GradleTest() {
     }
 
     val build =
-        gradleRunner(
-                "flankRun",
-                "-PdumpShards=true",
-                "--configuration-cache",
-                "--no-build-cache",
-                "--stacktrace")
+        gradleRunner("flankRun", "--configuration-cache", "--no-build-cache", "--stacktrace")
             .forwardOutput()
             .build()
 

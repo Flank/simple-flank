@@ -129,4 +129,26 @@ class FlankDoctorTest : GradleTest() {
 
     expectThat(build) { task(":flankDoctorDebug").isNotNull().isSuccess() }
   }
+
+  @Test
+  fun validYamlWithTestTargetsDSL() {
+    projectFromResources("app")
+    File(testProjectDir.root, "build.gradle.kts")
+        .appendText(
+            """
+        simpleFlank {
+          testTargets {
+            inClass("io.flank.sample.TestClass")
+            notInClass("io.flank.sample.NotATestClass")
+            small()
+            notAnnotation("io.flank.test.Flaky")
+            inPackage("io.flank.sample")
+          }
+        }
+        """.trimIndent())
+
+    val build = gradleRunner("flankDoctorDebug", "--stacktrace").forwardOutput().build()
+
+    expectThat(build) { task(":flankDoctorDebug").isNotNull().isSuccess() }
+  }
 }
