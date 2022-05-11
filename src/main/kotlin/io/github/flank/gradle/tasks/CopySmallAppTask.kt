@@ -23,13 +23,13 @@ constructor(
   private val apkName = "small-app.apk"
 
   @OutputFile
-  val appApk: Provider<RegularFile> = projectLayout.buildDirectory.file("$path/smallApp/$apkName")
+  val appApk: Provider<RegularFile> = projectLayout.buildDirectory.file("smallApp/$apkName")
 
   @TaskAction
   fun run() {
     fileSystemOperations.copy {
       from({ pluginJar.single { it.name == apkName }.path })
-      into(projectLayout.buildDirectory.file("$path/smallApp/").get())
+      into(projectLayout.buildDirectory.dir("smallApp/"))
     }
   }
 }
