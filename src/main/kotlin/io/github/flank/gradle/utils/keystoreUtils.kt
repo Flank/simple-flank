@@ -8,7 +8,6 @@ import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.Copy
-import org.gradle.kotlin.dsl.maybeCreate
 import org.gradle.kotlin.dsl.withType
 
 fun verifyNotDefaultKeystore(
@@ -31,23 +30,24 @@ fun verifyNotDefaultKeystore(
 }
 
 fun Project.useFixedKeystore() {
-  val copyDebugKeystore: Copy = rootProject.tasks.maybeCreate<Copy>("copyDebugKeystore")
-  with(copyDebugKeystore) {
-    val pluginJar =
-        zipTree(
-            SimpleFlankExtension::class.java.classLoader.getResource("debugKeystore")!!
-                .path
-                .split("!")
-                .first())
-    from({ pluginJar.single { it.name == "debugKeystore" }.path })
-    into("$buildDir/uitestKeystore")
-  }
+  val keystoreName = "debugKeystore"
+  val copyDebugKeystore =
+      tasks.register("copyDebugKeystore", Copy::class.java) {
+        val pluginJar =
+            zipTree(
+                SimpleFlankExtension::class.java.classLoader.getResource(keystoreName)!!
+                    .path
+                    .split("!")
+                    .first())
+        from({ pluginJar.single { it.name == keystoreName }.path })
+        into("$buildDir/uitestKeystore")
+      }
 
   val androidExtension = extensions.getByName("android") as LibraryExtension
   tasks.withType<ValidateSigningTask>().configureEach { dependsOn(copyDebugKeystore) }
   androidExtension.signingConfigs {
     named("debug") {
-      storeFile = File(rootProject.buildDir, "uitestKeystore/debugKeystore")
+      storeFile = File(copyDebugKeystore.get().destinationDir, keystoreName)
       keyAlias = "debugKey"
       keyPassword = "debugKeystore"
       storePassword = "debugKeystore"
