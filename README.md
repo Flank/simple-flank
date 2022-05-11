@@ -42,9 +42,23 @@ simpleFlank {
   testTargets {
     inClass("io.flank.sample.TestClass")
     notInClass("io.flank.sample.NotATestClass", "io.flank.sample.NotATestClassEither")
-    small()
+
+    small() // or medium() or large()
+
+    annotation("io.flank.test.InstrumentationTest")
     notAnnotation("io.flank.test.Flaky")
+
     inPackage("io.flank.sample")
+    notInPackage("io.flank.external")
+
+    testFile("/sdcard/tmp/testFile.txt")
+    notTestFile("/sdcard/tmp/notTestFile.txt")
+
+    regex("BarTest.*")
+
+    filter("com.android.foo.MyCustomFilter", "com.android.foo.AnotherCustomFilter")
+
+    runnerBuilder("com.android.foo.MyCustomBuilder", "com.android.foo.AnotherCustomBuilder")
   }
 
   // EnvironmentVariables
