@@ -1,7 +1,7 @@
 # simple-flank
 simple-flank is a new gradle plugin with a clear focus: make the setup as simple as possible.
 
-Applied to any application or library module it creates a task called `runFlank` that will run all the android tests (all flavors, debug buildType by default)
+Applied to any application or library module it creates a task called `flankRun` that will run all the android tests (all flavors, debug buildType by default)
 
 Tests will be executed using NexusLowRes emulators, and the lower sdk possible (between minSdk and available SDKs at Firebase)
 
@@ -17,7 +17,7 @@ plugins {
 
 add your firebase credentials to the rootproject as `ftl-credentials.json`
 
-That's it, run `./gradlew runFlank` and get the results.
+That's it, run `./gradlew flankRun` and get the results.
 
 # Optional configuration
 
@@ -82,7 +82,7 @@ android {
 
 ## How to debug shards?
 
-`./gradlew runFlank -PdumpShards=true`
+`./gradlew flankRun -PdumpShards=true`
 
 ## What if I want to use a different flank config?
 
