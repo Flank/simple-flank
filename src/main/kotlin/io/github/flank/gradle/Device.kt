@@ -4,7 +4,9 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 
-open class Device(
+open class Device
+@JvmOverloads
+constructor(
     @Input val id: String,
     @Input val osVersion: Int,
     @Internal val make: String? = null,
@@ -41,7 +43,9 @@ open class Device(
   override fun compareTo(other: Device): Int = comparator.compare(this, other)
 }
 
-class NexusLowRes(osVersion: Int, locale: String? = null, orientation: Orientation? = null) :
+class NexusLowRes
+@JvmOverloads
+constructor(osVersion: Int, locale: String? = null, orientation: Orientation? = null) :
     Device(id, osVersion, make, model, locale, orientation) {
   companion object : MinSdk {
     override val id = "NexusLowRes"
