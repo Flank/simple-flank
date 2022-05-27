@@ -16,7 +16,7 @@ class FlankVersionTest : GradleTest() {
 
     expectThat(build) {
       task(":flankVersion").isNotNull().isSuccess()
-      output.contains("version: v22.04.0")
+      output.contains("version: v22.05.0")
     }
   }
 

@@ -109,6 +109,38 @@ android {
 }
 ```
 
+# What happens if I don't have android tests for a project?
+
+Maybe you are applying simple-flank from a convention plugin to all your subprojects. That approach has some issues 
+because you will run tasks you don't need, but it won't fail, Flank does validate it and abort the execution and 
+simple-flank just ignores that error.
+
+AGP by default considers that all projects have androidTest enabled, but you could fix that with something like:
+```kotlin
+  androidComponents.beforeVariants(selector().withName("MY_NO_TESTS_VARIANT")) { variant ->
+    variant.enableAndroidTest = false
+  }
+```
+
+or check if the androidTest folders exist:
+```kotlin
+  androidComponents.beforeVariants { variant ->
+    val basePath = "$projectDir/src/androidTest"
+    val buildTypedPath = basePath + variant.buildType?.capitalize()
+    val flavoredPath = basePath + variant.flavorName?.capitalize()
+    val variantPath = flavoredPath + variant.buildType?.capitalize()
+    variant.enableAndroidTest = (
+      file(basePath).exists() ||
+      file(buildTypedPath).exists() ||
+      file(flavoredPath).exists() ||
+      file(variantPath).exists()
+    )
+  }
+```
+
+disabling androidTest will save a lot of build time because you won't need to compile, package and run flank for 
+those project.
+
 ## How to debug shards?
 
 `./gradlew flankRun -PdumpShards=true`

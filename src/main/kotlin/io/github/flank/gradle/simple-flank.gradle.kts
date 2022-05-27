@@ -16,7 +16,7 @@ import io.github.flank.gradle.utils.verifyNotDefaultKeystore
 
 val flankExecutable: Configuration by configurations.creating
 
-dependencies { flankExecutable("com.github.flank:flank") { version { prefer("22.04.0") } } }
+dependencies { flankExecutable("com.github.flank:flank") { version { prefer("22.05.0") } } }
 
 val simpleFlankExtension = extensions.create<SimpleFlankExtension>("simpleFlank")
 
