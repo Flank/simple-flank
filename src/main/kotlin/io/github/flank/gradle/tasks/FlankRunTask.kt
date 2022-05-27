@@ -86,7 +86,7 @@ constructor(
             logger.warn(
                 """
                 ${testApk.get().singleFile().asFile.relativeTo(projectLayout.projectDirectory.asFile)} doesn't contain any test or they are filtered out
-                For projects without tests i's better not to apply this plugin, but if you need to apply it, the build 
+                For projects without tests it's better not to apply this plugin, but if you need to apply it, the build 
                 would be faster if you really deactivate the androidTests for this variant, like: 
 
                 androidComponents.beforeVariants(selector().withFlavor("dimension" to "flavorName")) {
