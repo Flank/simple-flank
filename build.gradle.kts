@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.github.flank.gradle"
-version = "0.2.1"
+version = "0.3.0"
 
 repositories {
     google()
