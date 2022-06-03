@@ -96,7 +96,7 @@ fun registerFlankYamlWriter(
       devices.convention(
           simpleFlankExtension.devices.orElse(
               provider { listOf(NexusLowRes.deviceForMinSdk(variant.minSdkVersion.apiLevel)) }))
-      this.appApk.set(appApk)
+      this.appApk.convention(appApk)
       this.testApk.convention(testApk)
 
       testTimeout.convention(simpleFlankExtension.testTimeout)
@@ -126,16 +126,16 @@ fun registerFlankRun(
     tasks.register<FlankRunTask>("flankRun${variant.name.capitalize()}") {
       flankJarClasspath.from(flankExecutable)
 
-      serviceAccountCredentials.set(simpleFlankExtension.credentialsFile)
-      this@register.variant.set(variant.name)
-      hermeticTests.set(simpleFlankExtension.hermeticTests)
-      this.appApk.set(appApk)
-      this.testApk.set(testApk)
+      serviceAccountCredentials.convention(simpleFlankExtension.credentialsFile)
+      this@register.variant.convention(variant.name)
+      hermeticTests.convention(simpleFlankExtension.hermeticTests)
+      this.appApk.convention(appApk)
+      this.testApk.convention(testApk)
       val dumpShards: String? by project
-      this@register.dumpShards.set(dumpShards.toBoolean())
+      this@register.dumpShards.convention(dumpShards.toBoolean())
       val dry: String? by project
-      this@register.dry.set(dry.toBoolean())
-      this.flankYaml.set(flankYaml)
+      this@register.dry.convention(dry.toBoolean())
+      this.flankYaml.convention(flankYaml)
     }
 
 fun registerFlankDoctor(
@@ -146,10 +146,10 @@ fun registerFlankDoctor(
 ): TaskProvider<FlankDoctorTask> =
     tasks.register<FlankDoctorTask>("flankDoctor${variant.name.capitalize()}") {
       flankJarClasspath.from(flankExecutable)
-      this@register.variant.set(variant.name)
-      this.appApk.set(appApk)
-      this.testApk.set(testApk)
-      this.flankYaml.set(flankYaml)
+      this@register.variant.convention(variant.name)
+      this.appApk.convention(appApk)
+      this.testApk.convention(testApk)
+      this.flankYaml.convention(flankYaml)
     }
 
 fun configureTasks(
