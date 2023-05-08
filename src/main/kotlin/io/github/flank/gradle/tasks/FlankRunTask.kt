@@ -27,6 +27,7 @@ constructor(
   val dry: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(false)
 
   @get:InputFile
+  @get:Optional
   @get:PathSensitive(PathSensitivity.NONE)
   abstract val serviceAccountCredentials: RegularFileProperty
 
@@ -62,9 +63,6 @@ constructor(
 
   @TaskAction
   fun run() {
-    check(serviceAccountCredentials.get().asFile.exists()) {
-      "serviceAccountCredential file doesn't exist ${serviceAccountCredentials.get()}"
-    }
 
     getOutputDir().get().asFile.deleteRecursively()
     execOperations
@@ -72,7 +70,9 @@ constructor(
           isIgnoreExitValue = true
           classpath = flankJarClasspath
           mainClass.set("ftl.Main")
-          environment(mapOf("GOOGLE_APPLICATION_CREDENTIALS" to serviceAccountCredentials.get()))
+          serviceAccountCredentials.orNull?.let { credentialsFile ->
+            environment(mapOf("GOOGLE_APPLICATION_CREDENTIALS" to credentialsFile))
+          }
           args = listOf("firebase", "test", "android", "run", "-c=${flankYaml.get()}")
           if (dumpShards.get()) args("--dump-shards")
           if (dry.get()) args("--dry")
