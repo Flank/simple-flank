@@ -49,6 +49,7 @@ plugins.withType<AppPlugin> {
   }
   tasks.register<FlankVersionTask>("flankVersion") { flankJarClasspath.from(flankExecutable) }
   registerRunFlankTask()
+  registerAuthTask()
 }
 
 plugins.withType<LibraryPlugin> {
@@ -73,6 +74,7 @@ plugins.withType<LibraryPlugin> {
   }
   tasks.register<FlankVersionTask>("flankVersion") { flankJarClasspath.from(flankExecutable) }
   registerRunFlankTask()
+  registerAuthTask()
 }
 
 fun registerFlankYamlWriter(
@@ -171,5 +173,11 @@ fun registerRunFlankTask() {
     group = Test.TASK_GROUP
     description = "Run all androidTest using flank."
     dependsOn(tasks.withType<FlankRunTask>())
+  }
+}
+
+fun registerAuthTask() {
+  tasks.register<FlankAuthTask>("flankAuth") {
+    flankJarClasspath.from(flankExecutable)
   }
 }
