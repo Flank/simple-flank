@@ -10,8 +10,19 @@ import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.property
 
-abstract class SimpleFlankExtension(project: Project) {
-  val credentialsFile: RegularFileProperty = project.objects.fileProperty()
+abstract class SimpleFlankExtension(private val project: Project) {
+  private val optionalDefaultCredentialFileProvider =
+      project.objects.fileProperty().apply {
+        // Se set the default credentials file only if exists already at configuration time.
+        // When the credentials are not there, clients can use the extension.
+        val defaultCredentialsFile = project.rootProject.file("ftl-credentials.json")
+        if (defaultCredentialsFile.exists()) {
+          value { defaultCredentialsFile }
+        }
+      }
+
+  val credentialsFile: RegularFileProperty =
+      project.objects.fileProperty().convention(optionalDefaultCredentialFileProvider)
 
   val projectId: Property<String> =
       project

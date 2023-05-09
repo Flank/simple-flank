@@ -128,15 +128,7 @@ fun registerFlankRun(
     tasks.register<FlankRunTask>("flankRun${variant.name.capitalize()}") {
       flankJarClasspath.from(flankExecutable)
 
-      serviceAccountCredentials.value(
-          simpleFlankExtension.credentialsFile.convention(
-              objects.fileProperty().let { property ->
-                // Se set the default credentials file only if exists already at configuration time.
-                // When the credentials are not there, clients can use the extension.
-                val defaultCredentialsFile = rootProject.file("ftl-credentials.json")
-                if (defaultCredentialsFile.exists()) property.value { defaultCredentialsFile }
-                else property
-              }))
+      serviceAccountCredentials.value(simpleFlankExtension.credentialsFile)
       this@register.variant.convention(variant.name)
       hermeticTests.convention(simpleFlankExtension.hermeticTests)
       this.appApk.convention(appApk)
