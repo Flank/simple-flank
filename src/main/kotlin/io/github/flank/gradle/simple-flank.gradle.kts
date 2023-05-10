@@ -49,6 +49,7 @@ plugins.withType<AppPlugin> {
   }
   tasks.register<FlankVersionTask>("flankVersion") { flankJarClasspath.from(flankExecutable) }
   registerRunFlankTask()
+  registerAuthTask()
 }
 
 plugins.withType<LibraryPlugin> {
@@ -73,6 +74,7 @@ plugins.withType<LibraryPlugin> {
   }
   tasks.register<FlankVersionTask>("flankVersion") { flankJarClasspath.from(flankExecutable) }
   registerRunFlankTask()
+  registerAuthTask()
 }
 
 fun registerFlankYamlWriter(
@@ -127,6 +129,7 @@ fun registerFlankRun(
       flankJarClasspath.from(flankExecutable)
 
       serviceAccountCredentials.convention(simpleFlankExtension.credentialsFile)
+      flankAuthDirectory.set(File(System.getProperty("user.home")).resolve(".flank"))
       this@register.variant.convention(variant.name)
       hermeticTests.convention(simpleFlankExtension.hermeticTests)
       this.appApk.convention(appApk)
@@ -172,4 +175,8 @@ fun registerRunFlankTask() {
     description = "Run all androidTest using flank."
     dependsOn(tasks.withType<FlankRunTask>())
   }
+}
+
+fun registerAuthTask() {
+  tasks.register<FlankAuthTask>("flankAuth") { flankJarClasspath.from(flankExecutable) }
 }

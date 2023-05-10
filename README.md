@@ -15,7 +15,7 @@ plugins {
 }
 ```
 
-add your firebase credentials to the rootproject as `ftl-credentials.json`
+add your firebase credentials to the rootproject as `ftl-credentials.json` or authenticate with your Google Account with `./gradlew flankAuth`
 
 That's it, run `./gradlew flankRun` and get the results.
 

@@ -26,9 +26,13 @@ constructor(
   @get:Input
   val dry: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(false)
 
-  @get:InputFile
+  @get:InputFiles
   @get:PathSensitive(PathSensitivity.NONE)
   abstract val serviceAccountCredentials: RegularFileProperty
+
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.ABSOLUTE)
+  abstract val flankAuthDirectory: DirectoryProperty
 
   @get:Input abstract val variant: Property<String>
 
@@ -62,9 +66,7 @@ constructor(
 
   @TaskAction
   fun run() {
-    check(serviceAccountCredentials.get().asFile.exists()) {
-      "serviceAccountCredential file doesn't exist ${serviceAccountCredentials.get()}"
-    }
+    checkAuthentication()
 
     getOutputDir().get().asFile.deleteRecursively()
     execOperations
@@ -72,7 +74,9 @@ constructor(
           isIgnoreExitValue = true
           classpath = flankJarClasspath
           mainClass.set("ftl.Main")
-          environment(mapOf("GOOGLE_APPLICATION_CREDENTIALS" to serviceAccountCredentials.get()))
+          serviceAccountCredentials.get().takeIf { it.asFile.exists() }?.let { credentialsFile ->
+            environment(mapOf("GOOGLE_APPLICATION_CREDENTIALS" to credentialsFile))
+          }
           args = listOf("firebase", "test", "android", "run", "-c=${flankYaml.get()}")
           if (dumpShards.get()) args("--dump-shards")
           if (dry.get()) args("--dry")
@@ -96,6 +100,20 @@ constructor(
             assertNormalExitValue()
           }
         }
+  }
+
+  private fun checkAuthentication() {
+    val isCredentialsFileProvided = serviceAccountCredentials.get().asFile.exists()
+    val isFlankAuthenticationProvided = flankAuthDirectory.get().asFile.exists()
+    check(isCredentialsFileProvided || isFlankAuthenticationProvided) {
+      """
+        Either a service account credential file should be provided or the flank authentication performed.
+        You can:
+          - Declare the service account credentials in the ftl-credentials.json file on your rootProject
+          - Declare the service account credentials in a custom path via the simple flank's extension simpleFlank { credentialsFile = "path/to/file.json" }
+          - Perform the authentication with a Google Account via "./gradlew flankAuth"
+      """.trimIndent()
+    }
   }
 
   companion object {
