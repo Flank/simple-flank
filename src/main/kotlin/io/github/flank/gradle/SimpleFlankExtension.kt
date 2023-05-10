@@ -13,7 +13,6 @@ import org.gradle.kotlin.dsl.property
 abstract class SimpleFlankExtension(private val project: Project) {
   val credentialsFile: RegularFileProperty =
       project.objects.fileProperty().convention { project.rootProject.file("ftl-credentials.json") }
-
   val projectId: Property<String> =
       project
           .objects

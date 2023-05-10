@@ -90,9 +90,7 @@ constructor(
           if (exitValue == NO_TESTS_EXIT_CODE) {
             logger.warn(
                 """
-                ${
-              testApk.get().singleFile().asFile.relativeTo(projectLayout.projectDirectory.asFile)
-            } doesn't contain any test or they are filtered out
+                ${testApk.get().singleFile().asFile.relativeTo(projectLayout.projectDirectory.asFile)} doesn't contain any test or they are filtered out
                 For projects without tests it's better not to apply this plugin, but if you need to apply it, the build 
                 would be faster if you really deactivate the androidTests for this variant, like: 
 
