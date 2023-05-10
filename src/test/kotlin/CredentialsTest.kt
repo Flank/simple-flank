@@ -28,10 +28,30 @@ class CredentialsTest : GradleTest() {
   }
 
   @Test
-  fun `When service account is provided, build is successful`() {
+  fun `When service account is provided using the default file, build is successful`() {
     projectFromResources("app")
 
     val build = gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
+
+    expectThat(build) {
+      output
+          .not()
+          .contains(
+              "Either a service account credential file should be provided or the flank authentication performed.")
+      taskPaths(TaskOutcome.SUCCESS).contains(":flankRunDebug")
+    }
+  }
+
+  @Test
+  fun `When service account is provided using the a custom file, build is successful`() {
+    projectFromResources("app")
+
+    val build = gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
+    File(testProjectDir.root, "ftl-credentials.json").deleteRecursively()
+    File(testProjectDir.root, "custom-credentials.json")
+        .appendText("{ \"project_id\": \"custom-project-id\" }")
+    File(testProjectDir.root, "build.gradle.kts")
+        .appendText("simpleFlank { credentialsFile.set(file(\"custom-credentials.json\")) }")
 
     expectThat(build) {
       output
