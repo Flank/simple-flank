@@ -31,6 +31,10 @@ constructor(
   @get:PathSensitive(PathSensitivity.NONE)
   abstract val serviceAccountCredentials: RegularFileProperty
 
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.ABSOLUTE)
+  abstract val flankAuthDirectory: DirectoryProperty
+
   @get:Input abstract val variant: Property<String>
 
   @get:InputFiles @get:Classpath abstract val flankJarClasspath: ConfigurableFileCollection
@@ -63,6 +67,7 @@ constructor(
 
   @TaskAction
   fun run() {
+    checkAuthentication()
 
     getOutputDir().get().asFile.deleteRecursively()
     execOperations
@@ -85,7 +90,9 @@ constructor(
           if (exitValue == NO_TESTS_EXIT_CODE) {
             logger.warn(
                 """
-                ${testApk.get().singleFile().asFile.relativeTo(projectLayout.projectDirectory.asFile)} doesn't contain any test or they are filtered out
+                ${
+              testApk.get().singleFile().asFile.relativeTo(projectLayout.projectDirectory.asFile)
+            } doesn't contain any test or they are filtered out
                 For projects without tests it's better not to apply this plugin, but if you need to apply it, the build 
                 would be faster if you really deactivate the androidTests for this variant, like: 
 
@@ -96,6 +103,20 @@ constructor(
             assertNormalExitValue()
           }
         }
+  }
+
+  private fun checkAuthentication() {
+    val isCredentialsFileProvided = serviceAccountCredentials.orNull?.asFile?.exists() ?: false
+    val isFlankAuthenticationProvided = flankAuthDirectory.get().asFile.exists()
+    check(isCredentialsFileProvided || isFlankAuthenticationProvided) {
+      """
+        Either a service account credential file should be provided or the flank authentication performed.
+        You can:
+          - Declare the service account credentials in the ftl-credentials.json file on your rootProject
+          - Declare the service account credentials in a custom path via the simple flank's extension simpleFlank { credentialsFile = "path/to/file.json" }
+          - Perform the authentication with a Google Account via "./gradlew flankAuth"
+      """.trimIndent()
+    }
   }
 
   companion object {

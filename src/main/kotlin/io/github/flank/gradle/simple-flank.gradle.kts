@@ -129,6 +129,7 @@ fun registerFlankRun(
       flankJarClasspath.from(flankExecutable)
 
       serviceAccountCredentials.value(simpleFlankExtension.credentialsFile)
+      flankAuthDirectory.set(File(System.getProperty("user.home")).resolve(".flank"))
       this@register.variant.convention(variant.name)
       hermeticTests.convention(simpleFlankExtension.hermeticTests)
       this.appApk.convention(appApk)
