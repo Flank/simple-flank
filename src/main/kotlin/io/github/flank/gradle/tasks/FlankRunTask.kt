@@ -75,7 +75,7 @@ constructor(
           isIgnoreExitValue = true
           classpath = flankJarClasspath
           mainClass.set("ftl.Main")
-          serviceAccountCredentials.orNull?.let { credentialsFile ->
+          serviceAccountCredentials.orNull?.takeIf { it.asFile.exists() }?.let { credentialsFile ->
             environment(mapOf("GOOGLE_APPLICATION_CREDENTIALS" to credentialsFile))
           }
           args = listOf("firebase", "test", "android", "run", "-c=${flankYaml.get()}")
