@@ -27,7 +27,6 @@ constructor(
   val dry: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(false)
 
   @get:InputFiles
-  @get:Optional
   @get:PathSensitive(PathSensitivity.NONE)
   abstract val serviceAccountCredentials: RegularFileProperty
 
@@ -75,7 +74,7 @@ constructor(
           isIgnoreExitValue = true
           classpath = flankJarClasspath
           mainClass.set("ftl.Main")
-          serviceAccountCredentials.orNull?.takeIf { it.asFile.exists() }?.let { credentialsFile ->
+          serviceAccountCredentials.get().takeIf { it.asFile.exists() }?.let { credentialsFile ->
             environment(mapOf("GOOGLE_APPLICATION_CREDENTIALS" to credentialsFile))
           }
           args = listOf("firebase", "test", "android", "run", "-c=${flankYaml.get()}")
@@ -104,7 +103,7 @@ constructor(
   }
 
   private fun checkAuthentication() {
-    val isCredentialsFileProvided = serviceAccountCredentials.orNull?.asFile?.exists() ?: false
+    val isCredentialsFileProvided = serviceAccountCredentials.get().asFile.exists()
     val isFlankAuthenticationProvided = flankAuthDirectory.get().asFile.exists()
     check(isCredentialsFileProvided || isFlankAuthenticationProvided) {
       """
