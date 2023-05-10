@@ -128,7 +128,7 @@ fun registerFlankRun(
     tasks.register<FlankRunTask>("flankRun${variant.name.capitalize()}") {
       flankJarClasspath.from(flankExecutable)
 
-      serviceAccountCredentials.value(simpleFlankExtension.credentialsFile)
+      serviceAccountCredentials.convention(simpleFlankExtension.credentialsFile)
       flankAuthDirectory.set(File(System.getProperty("user.home")).resolve(".flank"))
       this@register.variant.convention(variant.name)
       hermeticTests.convention(simpleFlankExtension.hermeticTests)

@@ -26,7 +26,7 @@ constructor(
   @get:Input
   val dry: Property<Boolean> = objectFactory.property(Boolean::class.java).convention(false)
 
-  @get:InputFile
+  @get:InputFiles
   @get:Optional
   @get:PathSensitive(PathSensitivity.NONE)
   abstract val serviceAccountCredentials: RegularFileProperty
