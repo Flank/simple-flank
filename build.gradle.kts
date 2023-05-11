@@ -13,29 +13,38 @@ repositories {
     mavenCentral()
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 val fixtureClasspath: Configuration by configurations.creating
 dependencies {
     implementation(kotlin("stdlib"))
     testImplementation("junit:junit:4.13.2")
     testImplementation("io.strikt:strikt-gradle:0.31.0")
-    compileOnly("com.android.tools.build:gradle:7.1.2")
-    fixtureClasspath("com.android.tools.build:gradle:7.1.2")
+    compileOnly("com.android.tools.build:gradle:8.0.1")
+    fixtureClasspath("com.android.tools.build:gradle:8.0.1")
     fixtureClasspath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.20")
 }
 
-// Inspired by: https://github.com/square/sqldelight/blob/83145b28cbdd949e98e87819299638074bd21147/sqldelight-gradle-plugin/build.gradle#L18
-// Append any extra dependencies to the test fixtures via a custom configuration classpath. This
-// allows us to apply additional plugins in a fixture while still leveraging dependency resolution
-// and de-duplication semantics.
 tasks.named("pluginUnderTestMetadata", PluginUnderTestMetadata::class.java) {
-    pluginClasspath.from(fixtureClasspath)
+    pluginClasspath.setFrom(
+        // Inspired by: https://discuss.gradle.org/t/how-to-make-gradle-testkit-depend-on-output-jar-rather-than-just-classes/18940
+        // We need the jar because Gradle by default uses just classes instead of the output jar.
+        // By not using the jar, the test environment is different from the production environment.
+        // In the production environment, resources (keystore and small apk) are inside the jar archive that we need to extract.
+        // In the test environment, resources are just files in the classpath, no need to extract the jar because there isn't one.
+        tasks.jar,
+        // Inspired by: https://github.com/square/sqldelight/blob/83145b28cbdd949e98e87819299638074bd21147/sqldelight-gradle-plugin/build.gradle#L18
+        // Append any extra dependencies to the test fixtures via a custom configuration classpath. This
+        // allows us to apply additional plugins in a fixture while still leveraging dependency resolution
+        // and de-duplication semantics.
+        fixtureClasspath
+    )
+
 }
 
 tasks.withType<Test> {
-    javaLauncher.set(
-        javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(11)) }
-    )
-
     if (!environment.containsKey("ANDROID_HOME")) {
         environment("ANDROID_HOME", "${environment["HOME"]}/Library/Android/sdk")
     }

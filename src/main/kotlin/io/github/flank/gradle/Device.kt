@@ -14,8 +14,6 @@ constructor(
     @Input @Optional val locale: String? = null,
     @Input @Optional val orientation: Orientation? = null
 ) : Comparable<Device> {
-  private val comparator =
-      compareBy<Device>({ it.id }, { it.osVersion }, { it.locale }, { it.orientation })
 
   override fun toString(): String {
     return "$make $model - $osVersion"
@@ -41,6 +39,11 @@ constructor(
   }
 
   override fun compareTo(other: Device): Int = comparator.compare(this, other)
+
+  companion object {
+    private val comparator =
+        compareBy<Device>({ it.id }, { it.osVersion }, { it.locale }, { it.orientation })
+  }
 }
 
 class NexusLowRes

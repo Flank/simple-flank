@@ -18,6 +18,12 @@ android {
     targetSdkVersion = 30
     minSdkVersion = 21
   }
+  namespace = "flank.simpleflank.testLibrary"
+
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+  }
 }
 
 dependencies {
