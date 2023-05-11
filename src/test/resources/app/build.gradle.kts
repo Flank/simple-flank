@@ -24,6 +24,7 @@ android {
     minSdkVersion(21)
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
+  namespace = "flank.simpleflank.testApp"
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_1_8
