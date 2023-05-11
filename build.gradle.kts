@@ -34,7 +34,7 @@ tasks.named("pluginUnderTestMetadata", PluginUnderTestMetadata::class.java) {
         // By not using the jar, the test environment is different from the production environment.
         // In the production environment, resources (keystore and small apk) are inside the jar archive that we need to extract.
         // In the test environment, resources are just files in the classpath, no need to extract the jar because there isn't one.
-        tasks.jar.flatMap { it.archiveFile },
+        tasks.jar,
         // Inspired by: https://github.com/square/sqldelight/blob/83145b28cbdd949e98e87819299638074bd21147/sqldelight-gradle-plugin/build.gradle#L18
         // Append any extra dependencies to the test fixtures via a custom configuration classpath. This
         // allows us to apply additional plugins in a fixture while still leveraging dependency resolution
