@@ -18,7 +18,7 @@ class CredentialsTest : GradleTest() {
     File(testProjectDir.root, "build.gradle.kts")
         .appendText("simpleFlank { projectId.set(\"my-project\") }")
 
-    val build = gradleRunner("flankRun", "--stacktrace").forwardOutput().buildAndFail()
+    val build = flankRun().forwardOutput().buildAndFail()
 
     expectThat(build) {
       output.contains(
@@ -31,7 +31,7 @@ class CredentialsTest : GradleTest() {
   fun `When service account is provided using the default file, build is successful`() {
     projectFromResources("app")
 
-    val build = gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
+    val build = flankRun().forwardOutput().build()
 
     expectThat(build) {
       output
@@ -46,7 +46,7 @@ class CredentialsTest : GradleTest() {
   fun `When service account is provided using the a custom file, build is successful`() {
     projectFromResources("app")
 
-    val build = gradleRunner("flankRun", "--stacktrace").forwardOutput().build()
+    val build = flankRun().forwardOutput().build()
     File(testProjectDir.root, "ftl-credentials.json").deleteRecursively()
     File(testProjectDir.root, "custom-credentials.json")
         .appendText("{ \"project_id\": \"custom-project-id\" }")
@@ -70,10 +70,7 @@ class CredentialsTest : GradleTest() {
         .appendText("simpleFlank { projectId.set(\"my-project\") }")
     userHomeDirectory.root.resolve(".flank").mkdir()
 
-    val build =
-        gradleRunner("flankRun", "-Duser.home=${userHomeDirectory.root.path}", "--stacktrace")
-            .forwardOutput()
-            .build()
+    val build = flankRun().forwardOutput().build()
 
     expectThat(build) {
       output
@@ -83,4 +80,7 @@ class CredentialsTest : GradleTest() {
       taskPaths(TaskOutcome.SUCCESS).contains(":flankRunDebug")
     }
   }
+
+  private fun flankRun() =
+      gradleRunner("flankRun", "-Duser.home=${userHomeDirectory.root.path}", "--stacktrace")
 }
